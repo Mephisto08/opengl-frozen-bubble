@@ -1,0 +1,3 @@
+C:\Users\werne\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\222.4345.21\bin\cmake\win\bin\cmake.exe -E rm -f CMakeFiles\opengl_frozen_bubble.dir/objects.a
+C:\Users\werne\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\222.4345.21\bin\mingw\bin\ar.exe qc CMakeFiles\opengl_frozen_bubble.dir/objects.a @CMakeFiles\opengl_frozen_bubble.dir\objects1.rsp
+C:\Users\werne\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\222.4345.21\bin\mingw\bin\g++.exe -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles\opengl_frozen_bubble.dir/objects.a -Wl,--no-whole-archive -o opengl_frozen_bubble.exe -Wl,--out-implib,libopengl_frozen_bubble.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\opengl_frozen_bubble.dir\linklibs.rsp
