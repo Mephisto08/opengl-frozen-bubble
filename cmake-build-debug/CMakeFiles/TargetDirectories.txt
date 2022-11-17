@@ -1,3 +1,0 @@
-C:/Users/werne/OneDrive/_Studium/_Master/3_Semester/ES_HMI/Praktika/opengl-frozen-bubble/cmake-build-debug/CMakeFiles/opengl_frozen_bubble.dir
-C:/Users/werne/OneDrive/_Studium/_Master/3_Semester/ES_HMI/Praktika/opengl-frozen-bubble/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/werne/OneDrive/_Studium/_Master/3_Semester/ES_HMI/Praktika/opengl-frozen-bubble/cmake-build-debug/CMakeFiles/rebuild_cache.dir
