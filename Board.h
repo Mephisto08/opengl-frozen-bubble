@@ -1,3 +1,7 @@
+//
+// Created by Niklas Werner on 17.11.2022.
+//
+
 #ifndef OPENGL_FROZEN_BUBBLE_BOARD_H
 #include "iostream"
 #include "Bubble.h"

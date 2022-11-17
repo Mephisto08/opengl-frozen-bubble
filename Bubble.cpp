@@ -1,3 +1,7 @@
+//
+// Created by Niklas Werner on 17.11.2022.
+//
+
 #include "Bubble.h"
 
 Bubble::Bubble() {}
