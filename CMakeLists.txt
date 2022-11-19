@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(
         HMI
+        Color.h
         Graph.h
         Graph.cpp
         Node.h
