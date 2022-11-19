@@ -56,7 +56,7 @@ void Game::importLevels() {
                         int nodeCol = nodePosition[1] - 48;
 
                         string nodeColor = line.substr(line.find('_') + 1);
-                        level.insertNode(nodeRow, nodeCol);
+                        //level.insertNode(nodeRow, nodeCol);
                     }
                 }
             }
