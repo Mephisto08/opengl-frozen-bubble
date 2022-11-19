@@ -59,14 +59,13 @@ void Game::importLevels() {
                         level.insertNode(nodeRow, nodeColumn, stringToColor(nodeColor));
 
                     }
-                }else{
-                    continue;
                 }
             }
             file.close();
         } else {
             throw invalid_argument("Cannot import level: Level '"+levelName+"' wasn't found!");
         }
+        levels.push_back(level);
     }
 }
 

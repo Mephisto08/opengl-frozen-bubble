@@ -18,13 +18,24 @@ void Level::insertNode(char row, int column, Color color) {
     graph.addNode(nodeName, color);
 
     vector<string> possibleNeighbors = {
-            static_cast<char>(row-1)+to_string(column),
-            static_cast<char>(row-1)+to_string(column+1),
-            static_cast<char>(row)+to_string(column+1),
-            static_cast<char>(row+1)+to_string(column),
-            static_cast<char>(row+1)+to_string(column-1),
-            static_cast<char>(row)+to_string(column-1)
+            static_cast<char>(row)+to_string(column-1),
+            static_cast<char>(row)+to_string(column+1)
     };
+
+    if((row-'A') % 2 == 0){
+        possibleNeighbors.push_back(static_cast<char>(row-1)+to_string(column-1));
+        possibleNeighbors.push_back(static_cast<char>(row-1)+to_string(column));
+        possibleNeighbors.push_back(static_cast<char>(row+1)+to_string(column-1));
+        possibleNeighbors.push_back(static_cast<char>(row+1)+to_string(column));
+
+    }else{
+        possibleNeighbors.push_back(static_cast<char>(row-1)+to_string(column));
+        possibleNeighbors.push_back(static_cast<char>(row-1)+to_string(column+1));
+        possibleNeighbors.push_back(static_cast<char>(row+1)+to_string(column));
+        possibleNeighbors.push_back(static_cast<char>(row+1)+to_string(column+1));
+
+    }
+
     for(const string& pn : possibleNeighbors) {
         if (graph.getNode(pn)) {
             graph.addEdge(nodeName, pn);
