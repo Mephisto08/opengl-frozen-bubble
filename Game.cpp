@@ -15,7 +15,6 @@ void Game::start() {
 void Game::playLevel(Level l) {
     cout << "Loading level "+l.getName()+"..." << endl;
     l.print();
-    l.insertNode('A', 5, Color());
     // Do something...
 }
 
@@ -32,7 +31,7 @@ void Game::importLevels() {
 
             while (getline(file, line)) {
                 line.erase(remove(line.begin(), line.end(), ' '), line.end()); // Remove all spaces
-                if (line.back() == ';') {
+                if (!line.empty() && line.back() == ';') {
                     line.pop_back();
 
                     if (firstLine){
@@ -60,6 +59,8 @@ void Game::importLevels() {
                         level.insertNode(nodeRow, nodeColumn, stringToColor(nodeColor));
 
                     }
+                }else{
+                    continue;
                 }
             }
             file.close();
@@ -88,6 +89,9 @@ Color Game::stringToColor(const string& color) {
             if (color == "YELLOW") {
                 return {255, 255, 0};
             }
+            if (color == "WHITE") {
+                return {255, 255, 255};
+                }
             return {255,255, 255};
 }
 
