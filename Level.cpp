@@ -14,9 +14,10 @@ void Level::print() {
 }
 
 void Level::insertNode(char row, int column, Color color) {
-    graph.addNode(to_string(row)+to_string(column), color);
+    string nodeName = to_string(row)+to_string(column);
+    graph.addNode(nodeName, color);
 
-    vector<string> possible_neighbors = {
+    vector<string> possibleNeighbors = {
             to_string(row-1)+to_string(column),
             to_string(row-1)+to_string(column+1),
             to_string(row)+to_string(column+1),
@@ -24,7 +25,11 @@ void Level::insertNode(char row, int column, Color color) {
             to_string(row+1)+to_string(column),
             to_string(row)+to_string(column-1)
     };
-
+    for(const string& pn : possibleNeighbors) {
+        if (graph.getNode(pn)) {
+            graph.addEdge(nodeName, pn);
+        }
+    }
 }
 
 void Level::setColors(const vector<string> &colors) {
