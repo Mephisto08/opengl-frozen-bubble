@@ -22,25 +22,41 @@ void Game::playLevel(Level l) {
 void Game::importLevels() {
     for (const string& levelName : LEVEL_ORDER) {
         string filename = LEVEL_PATH + "/" + levelName + ".txt";
-        Graph graph = Graph(levelName);
+        Level level = Level(levelName);
         ifstream file(filename);
 
         if (file.is_open()) {
             string line;
+            bool firstLine = true;
+
+
             while (getline(file, line)) {
                 line.erase(remove(line.begin(), line.end(), ' '), line.end()); // Remove all spaces
                 if (line.back() == ';') {
                     line.pop_back();
 
-                    // Checks if they are nodes or edges and adds them to Graph
-                    if (line.find("--") == string::npos) {
-                        // Node
-                        graph.addNode(line);
-                    } else {
-                        // Edge
-                        string start = line.substr(0, line.find("--"));
-                        string end = line.substr(line.find("--") + 2);
-                        graph.addEdge(start, end);
+                    // Wird nur bei erster Zeile aufgerufen.
+                    // Splittet String bei , und fügt einzelne Elemente in vector
+                    if (firstLine){
+                        vector<string> levelColors;
+                        firstLine = false;
+                        stringstream lineS = stringstream(line);
+                        string segment;
+
+                        while(getline(lineS, segment, ','))
+                        {
+                            levelColors.push_back(segment);
+                        }
+                        level.setColors(levelColors);
+                    }
+                    // Nodes
+                    else{
+                        string nodePosition = line.substr(0, line.find('_'));
+                        char nodeRow = nodePosition[0];
+                        int nodeCol = nodePosition[1] - 48;
+
+                        string nodeColor = line.substr(line.find('_') + 1);
+                        level.insertNode(nodeRow, nodeCol);
                     }
                 }
             }
@@ -48,7 +64,6 @@ void Game::importLevels() {
         } else {
             throw invalid_argument("Cannot import level: Level '"+levelName+"' wasn't found!");
         }
-        levels.emplace_back(levelName, graph);
     }
 }
 

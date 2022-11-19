@@ -10,7 +10,7 @@
 using namespace std;
 
 static const string LEVEL_PATH =  "../level";
-static string LEVEL_ORDER[] = {"1", "2"};
+static string LEVEL_ORDER[] = {"3"};
 
 class Game {
 private:

@@ -12,12 +12,15 @@ class Level {
 private:
     string name;
     Graph graph;
-
+    vector<string> colors;
+    
 public:
     Level(string n, Graph g);
+    explicit Level(const string &name);
 
     void print();
     void insertNode(char row, int column, Color color);
+    void setColors(const vector<string> &colors);
     const string &getName() const;
 };
 
