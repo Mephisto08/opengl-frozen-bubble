@@ -15,6 +15,7 @@ void Game::start() {
 void Game::playLevel(Level l) {
     cout << "Loading level "+l.getName()+"..." << endl;
     l.print();
+    l.insertNode('A', 5, Color());
     // Do something...
 }
 

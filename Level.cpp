@@ -13,13 +13,20 @@ void Level::print() {
     graph.print();
 }
 
-void Level::insertNode(char row, int column) {
-    string name = "";
-    graph.addNode(name);
+void Level::insertNode(char row, int column, Color color) {
+    graph.addNode(to_string(row)+to_string(column), color);
+
+    vector<string> possible_neighbors = {
+            to_string(row-1)+to_string(column),
+            to_string(row-1)+to_string(column+1),
+            to_string(row)+to_string(column+1),
+            to_string(row+1)+to_string(column+1),
+            to_string(row+1)+to_string(column),
+            to_string(row)+to_string(column-1)
+    };
+
 }
 
 void Level::setColors(const vector<string> &colors) {
     Level::colors = colors;
 }
-
-

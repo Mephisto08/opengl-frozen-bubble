@@ -3,6 +3,10 @@
 Graph::Graph(const string& name) : name(name) {}
 
 Node* Graph::addNode(const string& name) {
+    return addNode(name, Color());
+}
+
+Node* Graph::addNode(const string& name, const Color &c) {
     auto res = nodes.insert(make_pair(name, Node(name)));
     if (!res.second) {
         throw invalid_argument("Cannot add node: Name '"+name+"' already exists!");
