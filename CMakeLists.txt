@@ -6,9 +6,11 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(
         HMI
         Color.h
+        Game.cpp
+        Game.h
         Graph.h
         Graph.cpp
         Node.h
         Node.cpp
         main.cpp
-)
+        )

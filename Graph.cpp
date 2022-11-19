@@ -1,6 +1,9 @@
 #include "Graph.h"
 
+#include <utility>
+
 Graph::Graph() = default;
+Graph::Graph(string lvlName) : lvlName(std::move(lvlName)) {}
 
 Node* Graph::addNode(const string& name) {
     auto res = nodes.insert(make_pair(name, Node(name)));
@@ -112,5 +115,7 @@ void Graph::clear() {
     nodes.clear();
     edges.clear();
 }
+
+
 
 

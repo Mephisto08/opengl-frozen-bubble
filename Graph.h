@@ -8,11 +8,14 @@ using namespace std;
 
 class Graph {
 private:
+    string lvlName;
     map<string, Node> nodes;
     set<pair<string, string>> edges;
     bool checkPathNode(const string& a, const string& b, set<string>& visited);
 public:
     Graph();
+    explicit Graph(string lvlName);
+
     void clear();
     void print();
     Node* getNode(const string& n);

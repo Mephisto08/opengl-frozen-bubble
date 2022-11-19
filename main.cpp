@@ -1,8 +1,21 @@
 #include <iostream>
 #include "Graph.h"
 #include "Node.h"
+#include "Game.h"
 using namespace std;
 
+
+int main(){
+    cout << "Spiel startet..." << endl;
+
+    Game fB;
+    fB.readInLevel();
+
+    cout << "Level eingelesen... " << endl;
+}
+
+
+/*
 int main() {
     Graph g;
     Node* a = g.addNode("A");
@@ -45,3 +58,4 @@ int main() {
     }
     return 0;
 }
+*/
