@@ -35,28 +35,30 @@ void Game::importLevels() {
                 if (line.back() == ';') {
                     line.pop_back();
 
-                    // Wird nur bei erster Zeile aufgerufen.
-                    // Splittet String bei , und fügt einzelne Elemente in vector
                     if (firstLine){
-                        vector<string> levelColors;
+                        map<string, Color> levelColors;
                         firstLine = false;
                         stringstream lineS = stringstream(line);
                         string segment;
 
                         while(getline(lineS, segment, ','))
                         {
-                            levelColors.push_back(segment);
+                            levelColors.insert(make_pair(segment, stringToColor(segment)));
                         }
+
                         level.setColors(levelColors);
                     }
+
                     // Nodes
                     else{
                         string nodePosition = line.substr(0, line.find('_'));
                         char nodeRow = nodePosition[0];
-                        int nodeCol = nodePosition[1] - 48;
+                        int nodeColumn = nodePosition[1] - 48;
 
                         string nodeColor = line.substr(line.find('_') + 1);
-                        //level.insertNode(nodeRow, nodeCol);
+
+                        level.insertNode(nodeRow, nodeColumn, stringToColor(nodeColor));
+
                     }
                 }
             }
@@ -65,5 +67,27 @@ void Game::importLevels() {
             throw invalid_argument("Cannot import level: Level '"+levelName+"' wasn't found!");
         }
     }
+}
+
+Color Game::stringToColor(const string& color) {
+            if (color == "ORANGE") {
+                return {255, 0, 0};
+            }
+            if (color == "BLUE"){
+                return {0, 0, 255};
+            }
+            if (color == "GREEN"){
+                return {0, 255, 0};
+            }
+            if (color == "PURPLE"){
+                return {166, 32, 240};
+            }
+            if (color == "BLACK"){
+                return {0, 0, 0};
+            }
+            if (color == "YELLOW") {
+                return {255, 255, 0};
+            }
+            return {255,255, 255};
 }
 

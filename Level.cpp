@@ -32,6 +32,6 @@ void Level::insertNode(char row, int column, Color color) {
     }
 }
 
-void Level::setColors(const vector<string> &colors) {
+void Level::setColors(const map<string, Color> &colors) {
     Level::colors = colors;
 }

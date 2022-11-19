@@ -7,10 +7,12 @@
 #include <algorithm>
 #include "Graph.h"
 #include "Level.h"
+#include "Color.h"
 using namespace std;
 
 static const string LEVEL_PATH =  "../level";
 static string LEVEL_ORDER[] = {"3"};
+
 
 class Game {
 private:
@@ -22,6 +24,7 @@ public:
     Game();
 
     void start();
+    static Color stringToColor(const string& color);
 };
 
 
