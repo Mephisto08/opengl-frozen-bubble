@@ -3,11 +3,6 @@
 #include <utility>
 #include "Graph.h"
 
-const int LOWER_COLUMN = 0;
-const int UPPER_COLUMN = 7;
-const char LOWER_ROW = 'A';
-const char UPPER_ROW = 'M';
-
 class Level {
 private:
     string name;

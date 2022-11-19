@@ -1,8 +1,11 @@
 #include "Level.h"
 
-Level::Level(string n, Graph g): name(move(n)), graph(move(g)) {}
+Level::Level(string n, Graph g): name(move(n)), graph(move(g)) {
+    graph.addNode("ROOT");
+}
 
 Level::Level(const string &name) : name(name), graph(name){
+    graph.addNode("ROOT");
 }
 
 const string &Level::getName() const {
@@ -16,6 +19,9 @@ void Level::print() {
 void Level::insertNode(char row, int column, Color color) {
     string nodeName = row + to_string(column);
     graph.addNode(nodeName, color);
+    if(row == 'A') {
+        graph.addEdge(nodeName, "ROOT");
+    }
 
     vector<string> possibleNeighbors = {
             static_cast<char>(row)+to_string(column-1),
