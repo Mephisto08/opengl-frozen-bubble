@@ -1,23 +1,27 @@
 #ifndef HMI_GAME_H
 #define HMI_GAME_H
-
-#include "Graph.h"
-#include <fstream>
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <vector>
 #include <algorithm>
-
+#include "Graph.h"
+#include "Level.h"
 using namespace std;
+
+static const string LEVEL_PATH =  "../level";
+static string LEVEL_ORDER[] = {"1", "2"};
 
 class Game {
 private:
-    string levels [2] = {"1", "2"};
-    string path =  R"(C:\Users\werne\OneDrive\_Studium\_Master\3_Semester\ES_HMI\Praktika\opengl-frozen-bubble\level\)";
-    map<string, Graph> graphes;
+    vector<Level> levels;
 
+    void importLevels();
+    static void playLevel(Level l);
 public:
     Game();
-    void readInLevel();
 
+    void start();
 };
 
 

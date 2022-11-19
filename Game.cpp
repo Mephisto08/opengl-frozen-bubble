@@ -1,48 +1,53 @@
 #include "Game.h"
 
-
 Game::Game() {
-
+    cout << "Preparing levels..." << endl;
+    importLevels();
 }
 
-void Game::readInLevel() {
-    for (string lvl : levels) {
-        string filename = path + lvl + ".txt";
-        Graph tmpGraph = Graph(lvl);
-        ifstream input(filename);
+void Game::start() {
+    cout << "Starting new game..." << endl;
+    for(const Level& level : levels) {
+        playLevel(level);
+    }
+}
 
-        if (input.is_open()) {
+void Game::playLevel(Level l) {
+    cout << "Loading level "+l.getName()+"..." << endl;
+    l.print();
+    // Do something...
+}
+
+void Game::importLevels() {
+    for (const string& levelName : LEVEL_ORDER) {
+        string filename = LEVEL_PATH + "/" + levelName + ".txt";
+        Graph graph = Graph(levelName);
+        ifstream file(filename);
+
+        if (file.is_open()) {
             string line;
-            while (std::getline(input, line)) {
-                if (line == "graph G {" || line == "}") {
-                    continue;
+            while (getline(file, line)) {
+                line.erase(remove(line.begin(), line.end(), ' '), line.end()); // Remove all spaces
+                if (line.back() == ';') {
+                    line.pop_back();
+
+                    // Checks if they are nodes or edges and adds them to Graph
+                    if (line.find("--") == string::npos) {
+                        // Node
+                        graph.addNode(line);
+                    } else {
+                        // Edge
+                        string start = line.substr(0, line.find("--"));
+                        string end = line.substr(line.find("--") + 2);
+                        graph.addEdge(start, end);
+                    }
                 }
-                line.pop_back();
-
-                // Prüft, ob es sich um Nodes oder Edges handelt und fügt diese zu Graph hinzu
-                if (line.find("--") == std::string::npos) {
-                    // Nodes
-
-                    // ab 2, da vorher 2 Leerzeichen sind
-                    line = line.substr(2);
-                    tmpGraph.addNode(line);
-                } else {
-                    // Edges
-
-                    // ab 2, da vorher 2 Leerzeichen sind
-                    string before = line.substr(2, line.find("--") - 2);
-                    string after = line.substr(line.find("--") + 2);
-
-                    tmpGraph.addEdge(before, after);
-                }
-
             }
-            input.close();
+            file.close();
+        } else {
+            throw invalid_argument("Cannot import level: Level '"+levelName+"' wasn't found!");
         }
-        auto res = graphes.insert(make_pair(lvl, tmpGraph));
-        if (!res.second) {
-            throw invalid_argument("Cannot add graph: Graph "+ lvl + " already exists!");
-        }
+        levels.emplace_back(levelName, graph);
     }
 }
 

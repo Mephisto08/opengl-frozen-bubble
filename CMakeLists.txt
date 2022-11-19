@@ -12,5 +12,7 @@ add_executable(
         Graph.cpp
         Node.h
         Node.cpp
+        Level.h
+        Level.cpp
         main.cpp
         )

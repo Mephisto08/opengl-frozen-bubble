@@ -1,28 +1,30 @@
 #ifndef HMI_GRAPH_H
 #define HMI_GRAPH_H
 #include <iostream>
-#include <map>
+#include <utility>
 #include <set>
+#include <map>
+#include <vector>
 #include "Node.h"
 using namespace std;
 
 class Graph {
 private:
-    string lvlName;
+    string name;
     map<string, Node> nodes;
     set<pair<string, string>> edges;
     bool checkPathNode(const string& a, const string& b, set<string>& visited);
 public:
-    Graph();
-    explicit Graph(string lvlName);
+    explicit Graph(const string& n);
 
     void clear();
     void print();
+    const string &getName() const;
     Node* getNode(const string& n);
     Node* addNode(const string& n);
     void removeNode(const string& n);
     void clearEdges(const string& n);
-    set<string> getNeighbors(const string& n);
+    vector<string> getNeighbors(const string& n);
     void addEdge(const string& a, const string& b);
     bool checkEdge(const string& a, const string& b);
     bool checkPath(const string& a, const string& b);

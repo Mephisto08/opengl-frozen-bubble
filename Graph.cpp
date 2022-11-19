@@ -1,9 +1,6 @@
 #include "Graph.h"
 
-#include <utility>
-
-Graph::Graph() = default;
-Graph::Graph(string lvlName) : lvlName(std::move(lvlName)) {}
+Graph::Graph(const string& name) : name(name) {}
 
 Node* Graph::addNode(const string& name) {
     auto res = nodes.insert(make_pair(name, Node(name)));
@@ -59,7 +56,7 @@ bool Graph::checkEdge(const string &nameA, const string &nameB) {
 }
 
 bool Graph::checkPathNode(const string &current, const string &target, set<string>& visited) {
-    const set<string> neighbors = getNeighbors(current);
+    const vector<string> neighbors = getNeighbors(current);
     for(const string& neighbor : neighbors) {
         if(neighbor == target) {
             return true;
@@ -88,13 +85,13 @@ bool Graph::checkPath(const string &start, const string &target) {
     return checkPathNode(start, target, visited);
 }
 
-set<string> Graph::getNeighbors(const string &name) {
-    set<string> foundNeighbors;
+vector<string> Graph::getNeighbors(const string &name) {
+    vector<string> foundNeighbors;
     for(const pair<string, string>& edge : edges) {
         if (edge.first == name) {
-            foundNeighbors.insert(edge.second);
+            foundNeighbors.push_back(edge.second);
         } else if (edge.second == name) {
-            foundNeighbors.insert(edge.first);
+            foundNeighbors.push_back(edge.first);
         }
     }
     return foundNeighbors;
@@ -116,6 +113,6 @@ void Graph::clear() {
     edges.clear();
 }
 
-
-
-
+const string &Graph::getName() const {
+    return name;
+}
