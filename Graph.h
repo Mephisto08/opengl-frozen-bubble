@@ -22,6 +22,7 @@ public:
     const string &getName() const;
     Node* getNode(const string& n);
     Node* addNode(const string& n);
+    Node* addNode(const string& n, const Color &c);
     void removeNode(const string& n);
     void clearEdges(const string& n);
     vector<string> getNeighbors(const string& n);
