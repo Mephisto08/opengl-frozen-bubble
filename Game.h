@@ -13,19 +13,19 @@ using namespace std;
 static const string LEVEL_PATH =  "../level";
 static string LEVEL_ORDER[] = {"3"};
 
-
 class Game {
 private:
     vector<Level> levels;
+    Level currentLevel;
 
     void importLevels();
-    static void playLevel(Level l);
+    void playLevel(Level l);
 public:
     Game();
 
     void start();
+    void shoot(char row, int column, Color color);
     static Color stringToColor(const string& color);
 };
-
 
 #endif //HMI_GAME_H

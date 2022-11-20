@@ -1,13 +1,13 @@
 #include "Graph.h"
 
-Graph::Graph(const string& name) : name(name) {}
+Graph::Graph(string name) : name(std::move(name)) {}
 
 Node* Graph::addNode(const string& name) {
     return addNode(name, Color());
 }
 
 Node* Graph::addNode(const string& name, const Color &c) {
-    auto res = nodes.insert(make_pair(name, Node(name)));
+    auto res = nodes.insert(make_pair(name, Node(name, c)));
     if (!res.second) {
         throw invalid_argument("Cannot add node: Name '"+name+"' already exists!");
     }
@@ -119,4 +119,12 @@ void Graph::clear() {
 
 const string &Graph::getName() const {
     return name;
+}
+
+vector<string> Graph::getAllNodes() const {
+    vector<string> nodeNames;
+    for(const pair<string, Node> node : nodes) {
+        nodeNames.push_back(node.first);
+    }
+    return nodeNames;
 }

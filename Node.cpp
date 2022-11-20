@@ -1,6 +1,8 @@
 #include "Node.h"
 
-Node::Node(string name) : name(move(name)) {}
+Node::Node(string n) : name(move(n)) {}
+
+Node::Node(string n, const Color &c) : name(std::move(n)), color(c) {}
 
 const string &Node::getName() const {
     return name;

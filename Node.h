@@ -9,8 +9,11 @@ class Node {
 private:
     string name;
     Color color;
+
 public:
-    explicit Node(string  n);
+    explicit Node(string n);
+    explicit Node(string n, const Color &c);
+
     const string &getName() const;
     const Color &getColor() const;
     void setColor(const Color &c);

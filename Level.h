@@ -3,21 +3,31 @@
 #include <utility>
 #include "Graph.h"
 
+const int LINE_NUM = 3;
+
 class Level {
 private:
     string name;
     Graph graph;
     map<string, Color> colors;
+    char deathZone = 'L';
+    void checkLineNode(const string& n, Color color, set<string>& found);
     
 public:
+    Level();
     Level(string n, Graph g);
     explicit Level(const string &name);
 
-    void setColors(const map<string, Color> &colors);
-
     void print();
-    void insertNode(char row, int column, Color color);
+    bool isWon() const;
+    bool isGameOver() const;
+    void expandDeathZone();
+    void removeDroppedNodes();
+    char getDeathZone() const;
     const string &getName() const;
+    void checkLine(const string& n);
+    void insertNode(char row, int column, Color color);
+    void setColors(const map<string, Color> &colors);
 };
 
 #endif //HMI_LEVEL_H

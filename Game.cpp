@@ -14,8 +14,8 @@ void Game::start() {
 
 void Game::playLevel(Level l) {
     cout << "Loading level "+l.getName()+"..." << endl;
-    l.print();
-    // Do something...
+    l.removeDroppedNodes();
+    currentLevel = l;
 }
 
 void Game::importLevels() {
@@ -28,36 +28,29 @@ void Game::importLevels() {
             string line;
             bool firstLine = true;
 
-
             while (getline(file, line)) {
                 line.erase(remove(line.begin(), line.end(), ' '), line.end()); // Remove all spaces
                 if (!line.empty() && line.back() == ';') {
                     line.pop_back();
 
-                    if (firstLine){
+                    if (firstLine) {
                         map<string, Color> levelColors;
                         firstLine = false;
                         stringstream lineS = stringstream(line);
                         string segment;
 
-                        while(getline(lineS, segment, ','))
-                        {
+                        while(getline(lineS, segment, ',')) {
                             levelColors.insert(make_pair(segment, stringToColor(segment)));
                         }
-
                         level.setColors(levelColors);
-                    }
-
-                    // Nodes
-                    else{
+                    } else {
+                        // Nodes
                         string nodePosition = line.substr(0, line.find('_'));
                         char nodeRow = nodePosition[0];
                         int nodeColumn = nodePosition[1] - 48;
 
                         string nodeColor = line.substr(line.find('_') + 1);
-
                         level.insertNode(nodeRow, nodeColumn, stringToColor(nodeColor));
-
                     }
                 }
             }
@@ -70,27 +63,48 @@ void Game::importLevels() {
 }
 
 Color Game::stringToColor(const string& color) {
-            if (color == "ORANGE") {
-                return {255, 0, 0};
-            }
-            if (color == "BLUE"){
-                return {0, 0, 255};
-            }
-            if (color == "GREEN"){
-                return {0, 255, 0};
-            }
-            if (color == "PURPLE"){
-                return {166, 32, 240};
-            }
-            if (color == "BLACK"){
-                return {0, 0, 0};
-            }
-            if (color == "YELLOW") {
-                return {255, 255, 0};
-            }
-            if (color == "WHITE") {
-                return {255, 255, 255};
-                }
-            return {255,255, 255};
+    if (color == "ORANGE") {
+        return {255, 0, 0};
+    }
+    if (color == "BLUE"){
+        return {0, 0, 255};
+    }
+    if (color == "GREEN"){
+        return {0, 255, 0};
+    }
+    if (color == "PURPLE"){
+        return {166, 32, 240};
+    }
+    if (color == "BLACK"){
+        return {0, 0, 0};
+    }
+    if (color == "YELLOW") {
+        return {255, 255, 0};
+    }
+    if (color == "WHITE") {
+        return {255, 255, 255};
+        }
+    return {255,255, 255};
+}
+
+void Game::shoot(char row, int column, Color color) {
+    string nodeName = row + to_string(column);
+
+    cout << "\nBEFORE:" << endl;
+    currentLevel.print();
+
+    currentLevel.insertNode(row, column, color);
+    currentLevel.checkLine(nodeName);
+    currentLevel.removeDroppedNodes();
+
+    cout << "\nAFTER:" << endl;
+    currentLevel.print();
+
+    if(currentLevel.isWon()) {
+        cout << "WINNER WINNER CHICKEN DINNER!" << endl;
+    }
+    if(currentLevel.isGameOver()) {
+        cout << "GAME OVER!" << endl;
+    }
 }
 

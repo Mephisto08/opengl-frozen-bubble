@@ -22,6 +22,10 @@ public:
     int g = DEFAULT_COLOR[1];
     int b = DEFAULT_COLOR[2];
     float a = 1.0f;
+
+    friend bool operator==(const Color& c1, const Color& c2) {
+        return (c1.r == c2.r && c1.g == c2.g && c1.b == c2.b && c1.a == c2.a);
+    }
 };
 
 #endif //HMI_COLOR_H
