@@ -297,8 +297,8 @@ GLuint load_shader(GLenum type, const string &path) {
 }
 
 static void initShaders() {
-    GLuint vertexShader = load_shader(GL_VERTEX_SHADER, "vertex.glsl");         // load vertex shader
-    GLuint fragmentShader = load_shader(GL_FRAGMENT_SHADER, "fragment.glsl");   // load fragment shader
+    GLuint vertexShader = load_shader(GL_VERTEX_SHADER, "shader/vertex.glsl");         // load vertex shader
+    GLuint fragmentShader = load_shader(GL_FRAGMENT_SHADER, "shader/fragment.glsl");   // load fragment shader
 
     check();
     showCompilerLog(vertexShader);
