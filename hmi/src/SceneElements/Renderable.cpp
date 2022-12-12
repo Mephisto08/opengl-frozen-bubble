@@ -40,8 +40,8 @@ void Renderable::render(GLint id) {
         glUniformMatrix4fv(locationModel,1,GL_FALSE, &modelMatrix[0][0]);
     }
 
-    for (auto & meshe : meshes) {
-        meshe.render(id);
+    for (auto & mesh : meshes) {
+        mesh.render(id);
     }
 }
 

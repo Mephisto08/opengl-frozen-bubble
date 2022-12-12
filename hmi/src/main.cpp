@@ -10,7 +10,7 @@ using namespace std;
 #include  <X11/Xatom.h>
 #include  <X11/Xutil.h>
 
-#include  <GLES2/gl2.h>
+#include  <GLES3/gl3.h>
 #include  <EGL/egl.h>
 #include <fstream>
 #include <sstream>
@@ -18,6 +18,7 @@ using namespace std;
 //#include "../framework/libheaders.h"
 #include "../framework/OBJLoader.h"
 #include "SceneElements/Renderable.h"
+#include "SceneElements/Camera.h"
 
 //  some more formulas to play with...
 //      cos( 20.*(pos.x*pos.x + pos.y*pos.y) - phase );
@@ -170,7 +171,9 @@ void  render()
    eglSwapBuffers ( egl_display, egl_surface );  // get the rendered buffer to the screen
 }
 
-Renderable* groundRenderable = nullptr;
+Renderable* sphereRenderable = nullptr;
+Renderable* sphereRenderable2 = nullptr;
+Camera* camera;
 
 void initscene(){
     //Load shader
@@ -191,29 +194,41 @@ void initscene(){
         OBJResult sphereResult = OBJLoader::loadOBJ("/home/osboxes/Desktop/hmi/assets/sphere.obj", calcnormals, calctangents);
         std::vector<OBJMesh> sphereMeshes = sphereResult.objects.at(0).meshes;
 
-        groundRenderable = new Renderable(sphereMeshes);
+        sphereRenderable = new Renderable(sphereMeshes);
+
+        sphereRenderable2 = new Renderable(sphereMeshes);
+
+        camera = new Camera(1280.0f, 720.0f, 60.0f, 0.1f, 100.0f, nullptr);
+        camera->setPosition(glm::vec3(0.0f,10.0f,0.0f));
+        camera->setRotation(glm::quat(glm::vec3(glm::radians(270.0f),0.0f,0.0f)));
+
+        sphereRenderable2->translate(glm::vec3(5.0f, 0.0f,0.0f));
+        sphereRenderable->scale(glm::vec3(1.0));
       }
       catch (std::exception &ex) {
         throw std::logic_error("Scene initialization failed:\n" + std::string(ex.what()) + "\n");
     }
 }
 
-void renderNew() {
+void renderNew(GLuint shaderProgram) {
    static float  phase = 0;
    static int    donesetup = 0;
 
    static XWindowAttributes gwa;
-
+   glUseProgram(shaderProgram);
    //// draw
+
+   GLint id;
+   glGetIntegerv(GL_CURRENT_PROGRAM, &id);
 
    if ( !donesetup ) {
       XWindowAttributes  gwa;
       XGetWindowAttributes ( x_display , win , &gwa );
-      glViewport ( 0 , 0 , gwa.width , gwa.height );
+      //glViewport ( 0 , 0 , gwa.width , gwa.height );
       glClearColor ( 0.08 , 0.06 , 0.07 , 1.);    // background color
       donesetup = 1;
    }
-   glClear ( GL_COLOR_BUFFER_BIT );
+   glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    if ( update_pos ) {  // if the position of the texture has changed due to user action
       GLfloat old_offset_x  =  offset_x;
@@ -231,9 +246,19 @@ void renderNew() {
       update_pos = false;
    }
 
-   glUniform4f ( offset_loc  ,  offset_x , offset_y , 0.0 , 0.0 );
+   glUniform3f ( offset_loc  ,  offset_x , offset_y , 0.0);
 
-   groundRenderable->render();
+   
+   sphereRenderable->render(id);
+   sphereRenderable2->render(id);
+
+   camera->bind(id);
+
+   auto pos1 = sphereRenderable->getPosition();
+   std::cout << pos1.x << pos1.y << pos1.z << std::endl;
+
+   auto pos2 = sphereRenderable2->getPosition();
+   std::cout << pos2.x << pos2.y << pos2.z << std::endl;
 
    eglSwapBuffers ( egl_display, egl_surface );  // get the rendered buffer to the screen
 }
@@ -412,14 +437,14 @@ int  main()
          XEvent  xev;
          XNextEvent( x_display, &xev );
 
-         if ( xev.type == MotionNotify ) {  // if mouse has moved
+         /*if ( xev.type == MotionNotify ) {  // if mouse has moved
 //            cout << "move to: << xev.xmotion.x << "," << xev.xmotion.y << endl;
             GLfloat window_y  =  (window_height - xev.xmotion.y) - window_height / 2.0;
             norm_y            =  window_y / (window_height / 2.0);
             GLfloat window_x  =  xev.xmotion.x - window_width / 2.0;
             norm_x            =  window_x / (window_width / 2.0);
             update_pos = true;
-         }
+         } */
 
          if ( xev.type == KeyPress )   quit = true;
       }
@@ -429,7 +454,7 @@ int  main()
       //render();   // now we finally put something on the screen
 
       initscene();
-      renderNew();
+      renderNew(shaderProgram);
 
 
       if ( ++num_frames % 100 == 0 ) {

@@ -4,7 +4,7 @@
 //#include <GL/glew.h>
 //#include "../../glew-1.7.0-2011.10-es/include/GL/eglew.h"
 #define GLM_ENABLE_EXPERIMENTAL
-#include  <GLES2/gl2.h>
+#include  <GLES3/gl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -35,12 +35,12 @@ Mesh::Mesh(std::vector<Vertex> vertexData, std::vector<VertexAttribute> vertexAt
 
 void Mesh::render() {
     // activate VAO //
-    //glBindVertexArray(vaoID);
+    glBindVertexArray(vaoID);
     // render call //
     glDrawElements(GL_TRIANGLES, indexData.size(), GL_UNSIGNED_INT, nullptr);
 
     // good programmers should reset //
-    //glBindVertexArray(0);
+    glBindVertexArray(0);
 }
 
 void Mesh::render(GLint id){
@@ -95,8 +95,8 @@ void Mesh::render(GLint id){
 void Mesh::setupMesh() {
 
     // setup VAO //
-    //glGenVertexArrays(1, &vaoID);
-    // glBindVertexArray(vaoID);
+    glGenVertexArrays(1, &vaoID);
+    glBindVertexArray(vaoID);
     // setup VBO //
     glGenBuffers(1, &vboID);
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
@@ -109,6 +109,7 @@ void Mesh::setupMesh() {
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(3, vertexAttributes.at(3).n, GL_FLOAT, false, vertexAttributes.at(3).stride, (void*)vertexAttributes.at(3).offset);
     glEnableVertexAttribArray(3);
+    
     // setup IBO //
     GLuint iboID;
     glGenBuffers(1, &iboID); //only works after glGenVertexArrays();
