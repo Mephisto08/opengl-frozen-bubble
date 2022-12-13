@@ -1,4 +1,4 @@
-#version 320 es
+#version 300 es
 
 in mediump vec2    pos;                        
 uniform mediump float   phase;

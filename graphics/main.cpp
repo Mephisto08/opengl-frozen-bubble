@@ -345,7 +345,7 @@ void drawSquare() {
 }
 
 // define the number of vertices in the circle
-#define NUM_VERTICES 32
+#define NUM_VERTICES 128
 
 // define the radius of the circle
 #define RADIUS 0.5
@@ -354,22 +354,34 @@ void drawSquare() {
 #define CENTER_X 0.0
 #define CENTER_Y 0.0
 
-void drawCircle() {
+void drawCircleShape(GLfloat radius = 0.5) {
     // array to hold the vertices of the circle
     GLfloat vertices[NUM_VERTICES][2];
 
     // calculate the vertices of the circle
     for (int i = 0; i < NUM_VERTICES; i++) {
         GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
-        vertices[i][0] = RADIUS * cos(angle) + CENTER_X;
-        vertices[i][1] = RADIUS * sin(angle) + CENTER_Y;
+        vertices[i][0] = radius * cos(angle) + CENTER_X;
+        vertices[i][1] = radius * sin(angle) + CENTER_Y;
     }
 
     // draw the circle using the vertices array
     glVertexAttribPointer(aVertex, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(aVertex);
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     check();
+}
+void drawCircle(string color = "green", GLfloat radius = 0.5){
+    if (color == "green"){
+        glUniform4f(uColor, 0.4824, 0.6784, 0.1490, 1.0); // some green
+    }else if (color == "red"){
+        glUniform4f(uColor, 0.6824, 0.2784, 0.3490, 1.0); // some red
+    }else if (color == "black"){
+        glUniform4f(uColor, 0.0, 0.0, 0.0, 1.0); // some red
+    }
+
+    drawCircleShape(radius);
 }
 
 static void draw() {
@@ -390,8 +402,14 @@ static void draw() {
     // actual drawing happens here
     glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
     drawSquare();
-    glUniform4f(uColor, 0.4824, 0.6784, 0.1490, 1.0); // some green
-    drawCircle();
+
+    drawCircle("green");
+    drawCircle("red", 0.4);
+    drawCircle("black", 0.1);
+
+
+
+
     check();
 
     // finalize
