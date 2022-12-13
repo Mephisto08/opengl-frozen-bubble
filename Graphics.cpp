@@ -367,7 +367,7 @@ void Graphics::drawCircleByName(string name, Color color) {
     const float x = res->second.first;
     const float y = res->second.second;
 
-    glUniform4f(uColor, color.r/255, color.g/255, color.b/255, color.a); // some black
+    glUniform4f(uColor, float(color.r)/255.0f, float(color.g)/255.0f, float(color.b)/255.0f, color.a);
     drawCircle(x, y);
 }
 

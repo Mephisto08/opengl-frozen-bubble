@@ -3,6 +3,7 @@
 #include <map>
 #include <utility>
 #include "Color.h"
+#include <iostream>
 using namespace std;
 
 class Node {

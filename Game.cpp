@@ -64,7 +64,7 @@ void Game::importLevels() {
 
 Color Game::stringToColor(const string &color) {
     if (color == "ORANGE") {
-        return {255, 0, 0};
+        return {240, 143, 17};
     }
     if (color == "BLUE") {
         return {0, 0, 255};
@@ -83,6 +83,9 @@ Color Game::stringToColor(const string &color) {
     }
     if (color == "WHITE") {
         return {255, 255, 255};
+    }
+    if (color == "GREY") {
+        return {150, 150, 150};
     }
     return {255, 255, 255};
 }
