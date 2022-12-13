@@ -7,19 +7,19 @@ Game::Game() {
 
 void Game::start() {
     cout << "Starting new game..." << endl;
-    for(const Level& level : levels) {
+    for (const Level &level: levels) {
         playLevel(level);
     }
 }
 
 void Game::playLevel(Level l) {
-    cout << "Loading level "+l.getName()+"..." << endl;
+    cout << "Loading level " + l.getName() + "..." << endl;
     l.removeDroppedNodes();
     currentLevel = l;
 }
 
 void Game::importLevels() {
-    for (const string& levelName : LEVEL_ORDER) {
+    for (const string &levelName: LEVEL_ORDER) {
         string filename = LEVEL_PATH + "/" + levelName + ".txt";
         Level level = Level(levelName);
         ifstream file(filename);
@@ -39,7 +39,7 @@ void Game::importLevels() {
                         stringstream lineS = stringstream(line);
                         string segment;
 
-                        while(getline(lineS, segment, ',')) {
+                        while (getline(lineS, segment, ',')) {
                             levelColors.insert(make_pair(segment, stringToColor(segment)));
                         }
                         level.setColors(levelColors);
@@ -56,26 +56,26 @@ void Game::importLevels() {
             }
             file.close();
         } else {
-            throw invalid_argument("Cannot import level: Level '"+levelName+"' wasn't found!");
+            throw invalid_argument("Cannot import level: Level '" + levelName + "' wasn't found!");
         }
         levels.push_back(level);
     }
 }
 
-Color Game::stringToColor(const string& color) {
+Color Game::stringToColor(const string &color) {
     if (color == "ORANGE") {
         return {255, 0, 0};
     }
-    if (color == "BLUE"){
+    if (color == "BLUE") {
         return {0, 0, 255};
     }
-    if (color == "GREEN"){
+    if (color == "GREEN") {
         return {0, 255, 0};
     }
-    if (color == "PURPLE"){
+    if (color == "PURPLE") {
         return {166, 32, 240};
     }
-    if (color == "BLACK"){
+    if (color == "BLACK") {
         return {0, 0, 0};
     }
     if (color == "YELLOW") {
@@ -83,8 +83,8 @@ Color Game::stringToColor(const string& color) {
     }
     if (color == "WHITE") {
         return {255, 255, 255};
-        }
-    return {255,255, 255};
+    }
+    return {255, 255, 255};
 }
 
 void Game::shoot(char row, int column, Color color) {
@@ -100,11 +100,15 @@ void Game::shoot(char row, int column, Color color) {
     cout << "\nAFTER:" << endl;
     currentLevel.print();
 
-    if(currentLevel.isWon()) {
+    if (currentLevel.isWon()) {
         cout << "WINNER WINNER CHICKEN DINNER!" << endl;
     }
-    if(currentLevel.isGameOver()) {
+    if (currentLevel.isGameOver()) {
         cout << "GAME OVER!" << endl;
     }
+}
+
+const Level &Game::getCurrentLevel() const {
+    return currentLevel;
 }
 

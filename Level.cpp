@@ -112,3 +112,7 @@ void Level::removeDroppedNodes() {
         }
     }
 }
+
+const Graph &Level::getGraph() const {
+    return graph;
+}

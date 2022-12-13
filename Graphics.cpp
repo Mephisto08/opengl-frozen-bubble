@@ -1,80 +1,32 @@
-#include <iostream>
-#include <X11/Xutil.h>
-#include <X11/Xlib.h>
-#include <string.h>
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <map>
+#include "Graphics.h"
 
-extern "C" {
-//#include <bcm_host.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <X11/Xatom.h>
-#include <assert.h>
+Graphics::Graphics() {
+    cout << "Initializing OpenGL ES..." << endl;
+    initOGL();
+
+    cout << "Initializing shaders..." << endl;
+    initShaders();
+
+    cout << "Setting up viewport..." << endl;
+    setupViewport();
+
+    cout << "Initializing node screen positions..." << endl;
+    initNodePositions();
 }
-using namespace std;
 
-// define the number of vertices in the circle
-#define NUM_VERTICES 128
-#define DEFAULT_RADIUS 0.5
-
-// EGL handles
-EGLDisplay display;
-EGLSurface surface;
-EGLContext context;
-
-// Screen size for glViewport
-EGLint screenHeight;
-EGLint screenWidth;
-
-// MVP matrix
-glm::mat4 projection;
-glm::mat4 view;
-glm::mat4 model;
-
-int _width = 800;
-int _height = 600;
-// shader and program handles
-GLuint program;
-
-// attribute and uniform locations
-GLuint aPosition;
-GLuint aProjection;
-GLuint aView;
-GLuint aModel;
-GLuint uColor;
-
-//raspi4 globals
-Display *_xDisplay;
-Window _xWindow;
-
-map<string, pair<float, float>> nodePositions;
-
-/*
- * some helper functions / macros
- */
-
-#define check() assert(glGetError() == 0)
-
-void showCompilerLog(GLint shader) {
+void Graphics::showCompilerLog(GLint shader) {
     char log[1024];
     glGetShaderInfoLog(shader, sizeof log, NULL, log);
     cout << "Shader (#" << shader << ") compilation:\n" << log << endl;
 }
 
-void showLinkerLog(GLint prog) {
+void Graphics::showLinkerLog(GLint prog) {
     char log[1024];
     glGetProgramInfoLog(program, sizeof log, NULL, log);
     cout << "Shader (#" << program << ") linking:\n" << log << endl;
 }
 
-void resize() {
+void Graphics::resize() {
     // Raspberry Pi 4: query window size from X11
     XWindowAttributes gwa;
     XGetWindowAttributes(_xDisplay, _xWindow, &gwa);
@@ -86,7 +38,7 @@ void resize() {
     projection = glm::perspective(glm::radians(45.0f), (float) _width / (float) _height, 0.1f, 100.0f);
 }
 
-void handleXEvents() {
+void Graphics::handleXEvents() {
     bool quit = false;
     // under Raspberry Pi 4 we can process keys from X11
     while (XPending(_xDisplay)) {   // check for events from the x-server
@@ -119,7 +71,7 @@ void handleXEvents() {
     }
 }
 
-void createXWindow() {
+void Graphics::createXWindow() {
 
     _xDisplay = XOpenDisplay(NULL);
     if (NULL == _xDisplay) {
@@ -193,7 +145,7 @@ void createXWindow() {
  * sets up an OpenGL ES2 surface and clears the screen to hda_darkblue
  */
 
-static void initOGL() {
+void Graphics::initOGL() {
     EGLBoolean result;
     EGLint num_config;
 
@@ -257,7 +209,7 @@ static void initOGL() {
     check();
 }
 
-void print_shader_info_log(GLuint shader) {  // handle to the shader
+void Graphics::print_shader_info_log(GLuint shader) {  // handle to the shader
     GLint length;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
@@ -273,7 +225,7 @@ void print_shader_info_log(GLuint shader) {  // handle to the shader
     }
 }
 
-GLuint load_shader(GLenum type, const string &path) {
+GLuint Graphics::load_shader(GLenum type, const string &path) {
     string Code;
     ifstream ShaderFile;
 
@@ -305,7 +257,7 @@ GLuint load_shader(GLenum type, const string &path) {
     return shader;
 }
 
-static void initShaders() {
+void Graphics::initShaders() {
     GLuint vertexShader = load_shader(GL_VERTEX_SHADER, "shader/vertex.glsl");         // load vertex shader
     GLuint fragmentShader = load_shader(GL_FRAGMENT_SHADER, "shader/fragment.glsl");   // load fragment shader
 
@@ -329,15 +281,7 @@ static void initShaders() {
     uColor = glGetUniformLocation(program, "Color");
 }
 
-float spacingX = DEFAULT_RADIUS * 2 + 0.005;
-float spacingY = 0.875;
-
-float diffX = -3.5f * spacingX;
-float diffY = 6 * spacingY;
-
-float offsetY = 1;
-
-static void initNodePositions() {
+void Graphics::initNodePositions() {
     for (int y = 0; y < 13; ++y) {
         if (y % 2 == 0) {
             for (int x = 0; x < 8; ++x) {
@@ -361,7 +305,7 @@ static void initNodePositions() {
     }
 }
 
-void setupViewport() {
+void Graphics::setupViewport() {
 /*
    // query size using a broadcom function, raspi only
    int32_t success = graphics_get_display_size(0, &screenWidth, &screenHeight);
@@ -388,14 +332,14 @@ void setupViewport() {
     check();
 }
 
-void drawSquare(GLfloat squareData[]) {
+void Graphics::drawSquare(GLfloat squareData[]) {
     glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, squareData);
     glEnableVertexAttribArray(aPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     check();
 }
 
-void drawCircleShape(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS) {
+void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     // array to hold the vertices of the circle
     GLfloat vertices[NUM_VERTICES][2];
 
@@ -414,19 +358,7 @@ void drawCircleShape(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radiu
     check();
 }
 
-void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, string color = "green", GLfloat radius = DEFAULT_RADIUS) {
-    if (color == "green") {
-        glUniform4f(uColor, 0.4824, 0.6784, 0.1490, 1.0); // some green
-    } else if (color == "red") {
-        glUniform4f(uColor, 0.6824, 0.2784, 0.3490, 1.0); // some red
-    } else if (color == "black") {
-        glUniform4f(uColor, 0.0, 0.0, 0.0, 1.0); // some black
-    }
-
-    drawCircleShape(centerX, centerY, radius);
-}
-
-void drawCircleByName(string name, string color) {
+void Graphics::drawCircleByName(string name, Color color) {
     auto res = nodePositions.find(name);
     if (res == nodePositions.end()) {
         throw invalid_argument("Cannot draw circle: Name '"+name+"' wasn't found!");
@@ -434,10 +366,12 @@ void drawCircleByName(string name, string color) {
     }
     const float x = res->second.first;
     const float y = res->second.second;
-    drawCircle( x, y, color);
+
+    glUniform4f(uColor, color.r/255, color.g/255, color.b/255, color.a); // some black
+    drawCircle(x, y);
 }
 
-static void draw() {
+void Graphics::draw(map<string, Node> nodes) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     check();
 
@@ -464,21 +398,12 @@ static void draw() {
     glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
     drawSquare(squareData);
 
-    /*
-    for (const pair<string, pair<float, float>> &nodePos: nodePositions) {
-        drawCircleByName(nodePos.first, "green");
+
+    for (const pair<string, Node> &node: nodes) {
+        if(node.first != "ROOT") {
+            drawCircleByName(node.first, node.second.getColor());
+        }
     }
-     */
-    drawCircleByName("A2", "green");
-    drawCircleByName("A5", "green");
-    drawCircleByName("B2", "green");
-    drawCircleByName("B3", "green");
-    drawCircleByName("B4", "green");
-    drawCircleByName("C3", "green");
-    drawCircleByName("C4", "green");
-    drawCircleByName("D2", "green");
-    drawCircleByName("D3", "green");
-    drawCircleByName("D4", "green");
 
     check();
 
@@ -490,30 +415,4 @@ static void draw() {
     // swap buffers: show what we just painted
     eglSwapBuffers(display, surface);
     check();
-}
-
-//==============================================================================
-
-int main() {
-    // only raspberry pi needs this
-    //bcm_host_init();
-
-    initOGL();
-    cout << "OpenGL ES initialized." << endl;
-
-    initShaders();
-    cout << "Shaders initialized." << endl;
-
-    initNodePositions();
-    cout << "Node positions initialized." << endl;
-
-    setupViewport();
-    cout << "Viewport set up." << endl;
-
-    while (true) {
-        //we usually run our own event loop in OpenGL ES2
-        handleXEvents();
-        draw();
-    }
-    return 0;
 }

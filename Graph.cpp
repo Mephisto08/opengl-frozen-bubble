@@ -128,3 +128,7 @@ vector<string> Graph::getAllNodes() const {
     }
     return nodeNames;
 }
+
+const map<string, Node> &Graph::getNodes() const {
+    return nodes;
+}

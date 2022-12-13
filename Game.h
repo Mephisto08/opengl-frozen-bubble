@@ -26,6 +26,8 @@ public:
     void start();
     void shoot(char row, int column, Color color);
     static Color stringToColor(const string& color);
+
+    const Level &getCurrentLevel() const;
 };
 
 #endif //HMI_GAME_H

@@ -26,6 +26,7 @@ public:
     void removeNode(const string& n);
     void clearEdges(const string& n);
     vector<string> getAllNodes() const;
+    const map<string, Node> &getNodes() const;
     vector<string> getNeighbors(const string& n);
     void addEdge(const string& a, const string& b);
     Node* addNode(const string& n, const Color &c);
