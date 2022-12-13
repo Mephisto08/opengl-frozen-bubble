@@ -282,6 +282,12 @@ void Graphics::initShaders() {
 }
 
 void Graphics::initNodePositions() {
+    nodePositions.insert(make_pair("QUEUE_0",
+                                              make_pair((float) 3.5 * spacingX + diffX,
+                                                        (float) 13.5 * -spacingY + diffY + offsetY)));
+    nodePositions.insert(make_pair("QUEUE_1",
+                                              make_pair((float) 5 * spacingX + diffX,
+                                                        (float) 14 * -spacingY + diffY + offsetY)));
     for (int y = 0; y < 13; ++y) {
         if (y % 2 == 0) {
             for (int x = 0; x < 8; ++x) {

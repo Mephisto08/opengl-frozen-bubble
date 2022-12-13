@@ -32,6 +32,7 @@ public:
     Node* addNode(const string& n, const Color &c);
     bool checkEdge(const string& a, const string& b);
     bool checkPath(const string& a, const string& b);
+    void setNodeColor(const string& n, const Color &c);
 };
 
 #endif //HMI_GRAPH_H

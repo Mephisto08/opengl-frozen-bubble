@@ -4,10 +4,18 @@ Level::Level(): name("NULL"), graph(Graph("NULL")) {}
 
 Level::Level(string n, Graph g): name(move(n)), graph(move(g)) {
     graph.addNode("ROOT");
+    graph.addNode("QUEUE_0");
+    graph.addEdge("QUEUE_0", "ROOT");
+    graph.addNode("QUEUE_1");
+    graph.addEdge("QUEUE_1", "ROOT");
 }
 
 Level::Level(const string &name) : name(name), graph(name){
     graph.addNode("ROOT");
+    graph.addNode("QUEUE_0");
+    graph.addEdge("QUEUE_0", "ROOT");
+    graph.addNode("QUEUE_1");
+    graph.addEdge("QUEUE_1", "ROOT");
 }
 
 const string &Level::getName() const {
@@ -62,7 +70,7 @@ bool Level::isWon() const {
 
 bool Level::isGameOver() const {
     for(const string& n : graph.getAllNodes()) {
-        if (n[0] >= deathZone && n != "ROOT") {
+        if (n[0] >= deathZone && n != "ROOT" && n != "QUEUE_0" && n != "QUEUE_1") {
             return true;
         }
     }
@@ -113,6 +121,6 @@ void Level::removeDroppedNodes() {
     }
 }
 
-const Graph &Level::getGraph() const {
+Graph &Level::getGraph(){
     return graph;
 }

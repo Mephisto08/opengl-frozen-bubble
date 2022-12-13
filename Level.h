@@ -24,7 +24,7 @@ public:
     void expandDeathZone();
     void removeDroppedNodes();
     char getDeathZone() const;
-    const Graph &getGraph() const;
+    Graph &getGraph();
     const string &getName() const;
     void checkLine(const string& n);
     void insertNode(char row, int column, Color color);

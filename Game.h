@@ -1,5 +1,7 @@
 #ifndef HMI_GAME_H
 #define HMI_GAME_H
+#include <cstdlib>
+#include <ctime>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -20,14 +22,15 @@ private:
 
     void importLevels();
     void playLevel(Level l);
+    Color createNewNodeColor();
 public:
     Game();
 
     void start();
-    void shoot(char row, int column, Color color);
+    void shoot(char row, int column);
     static Color stringToColor(const string& color);
 
-    const Level &getCurrentLevel() const;
+    Level &getCurrentLevel();
 };
 
 #endif //HMI_GAME_H

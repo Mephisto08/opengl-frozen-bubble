@@ -132,3 +132,11 @@ vector<string> Graph::getAllNodes() const {
 const map<string, Node> &Graph::getNodes() const {
     return nodes;
 }
+
+void Graph::setNodeColor(const string &n, const Color &c) {
+    auto res = nodes.find(n);
+    if (res == nodes.end()) {
+        throw invalid_argument("Cannot find node: Name '"+n+"' wasn't found!");
+    }
+    res->second.setColor(c);
+}

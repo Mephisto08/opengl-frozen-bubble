@@ -3,6 +3,7 @@
 Game::Game() {
     cout << "Preparing levels..." << endl;
     importLevels();
+    srand(time(nullptr));
 }
 
 void Game::start() {
@@ -16,6 +17,9 @@ void Game::playLevel(Level l) {
     cout << "Loading level " + l.getName() + "..." << endl;
     l.removeDroppedNodes();
     currentLevel = l;
+
+    currentLevel.getGraph().setNodeColor("QUEUE_0", createNewNodeColor());
+    currentLevel.getGraph().setNodeColor("QUEUE_1", createNewNodeColor());
 }
 
 void Game::importLevels() {
@@ -90,13 +94,31 @@ Color Game::stringToColor(const string &color) {
     return {255, 255, 255};
 }
 
-void Game::shoot(char row, int column, Color color) {
+Color Game::createNewNodeColor() {
+    // TODO: Logik einbauen
+    vector<string> colors = {"ORANGE", "BLUE", "PURPLE", "GREEN", "GREY"};
+
+    int r = rand() % 5 ;
+    return stringToColor(colors[r]);
+}
+
+void Game::shoot(char row, int column) {
     string nodeName = row + to_string(column);
 
     cout << "\nBEFORE:" << endl;
     currentLevel.print();
 
-    currentLevel.insertNode(row, column, color);
+    Color newNodeColor = currentLevel.getGraph().getNode("QUEUE_0")->getColor();
+
+    // Durchschieben der Farben von 1 auf 0
+    Color queue_1 = currentLevel.getGraph().getNode("QUEUE_1")->getColor();
+    currentLevel.getGraph().setNodeColor("QUEUE_0", queue_1);
+
+    // Erstellen neuer Farbe für neuen Node in Queue
+    Color newQueueColor = createNewNodeColor();
+    currentLevel.getGraph().setNodeColor("QUEUE_1", newQueueColor);
+
+    currentLevel.insertNode(row, column, newNodeColor);
     currentLevel.checkLine(nodeName);
     currentLevel.removeDroppedNodes();
 
@@ -111,7 +133,9 @@ void Game::shoot(char row, int column, Color color) {
     }
 }
 
-const Level &Game::getCurrentLevel() const {
+Level &Game::getCurrentLevel() {
     return currentLevel;
 }
+
+
 

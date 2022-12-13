@@ -7,7 +7,10 @@ int main() {
     Graphics graphics;
 
     game.start();
-    //game.shoot('C', 5, game.stringToColor("BLUE"));
+
+    //game.getCurrentLevel().getGraph().getNode("QUEUE_1");
+
+    game.shoot('C', 5);
     //game.shoot('A', 3, game.stringToColor("ORANGE"));
     //game.shoot('A', 6, game.stringToColor("ORANGE"));
     //game.shoot('I', 3, game.stringToColor("ORANGE"));
