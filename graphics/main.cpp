@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cmath>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 extern "C" {
 //#include <bcm_host.h>
@@ -27,15 +28,22 @@ EGLContext context;
 EGLint screenHeight;
 EGLint screenWidth;
 
+// MVP matrix
+glm::mat4 projection;
+glm::mat4 view;
+glm::mat4 model;
+
 int _width = 800;
 int _height = 600;
 // shader and program handles
 GLuint program;
 
 // attribute and uniform locations
-GLuint aVertex;
+GLuint aPosition;
+GLuint aProjection;
+GLuint aView;
+GLuint aModel;
 GLuint uColor;
-
 
 //raspi4 globals
 Display *_xDisplay;
@@ -75,6 +83,9 @@ void resize() {
     _width = gwa.width;
     _height = gwa.height;
     glViewport(0, 0, _width, _height);
+
+    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    projection = glm::perspective(glm::radians(45.0f), (float) _width / (float) _height, 0.1f, 100.0f);
 }
 
 void handleXEvents() {
@@ -313,13 +324,14 @@ static void initShaders() {
 
     showLinkerLog(program);
 
-
-    aVertex = glGetAttribLocation(program, "vertex");
-    uColor = glGetUniformLocation(program, "color");
+    aPosition = glGetAttribLocation(program, "Position");
+    aProjection = glGetUniformLocation(program, "Projection");
+    aView = glGetUniformLocation(program, "View");
+    aModel = glGetUniformLocation(program, "Model");
+    uColor = glGetUniformLocation(program, "Color");
 }
 
 void setupViewport() {
-
 /*
    // query size using a broadcom function, raspi only
    int32_t success = graphics_get_display_size(0, &screenWidth, &screenHeight);
@@ -332,14 +344,23 @@ void setupViewport() {
     eglQuerySurface(display, surface, EGL_HEIGHT, &screenHeight);
     cout << "screen is " << screenWidth << "x" << screenHeight << endl;
 
-    glViewport(0, 0, screenWidth, screenHeight);
+    // Camera matrix
+    view = glm::lookAt(
+            glm::vec3(0,0,10), // Camera in World Space
+            glm::vec3(0,0,0), // and looks at the origin
+            glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+    );
 
+    // Model matrix : an identity matrix (model will be at the origin)
+    model = glm::mat4(1.0f);
+
+    glViewport(0, 0, screenWidth, screenHeight);
     check();
 }
 
 void drawSquare() {
-    glVertexAttribPointer(aVertex, 4, GL_FLOAT, GL_FALSE, 0, vertexData);
-    glEnableVertexAttribArray(aVertex);
+    glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, vertexData);
+    glEnableVertexAttribArray(aPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     check();
 }
@@ -349,7 +370,6 @@ void drawSquare() {
 
 // define the radius of the circle
 #define RADIUS 0.5
-
 // define the center of the circle
 #define CENTER_X 0.0
 #define CENTER_Y 0.0
@@ -366,8 +386,8 @@ void drawCircleShape(GLfloat radius = 0.5) {
     }
 
     // draw the circle using the vertices array
-    glVertexAttribPointer(aVertex, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    glEnableVertexAttribArray(aVertex);
+    glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(aPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     check();
@@ -393,10 +413,11 @@ static void draw() {
     glUseProgram(program);
     check();
 
-    // also color is unnecessarily set each time
-    // consider to pass it as an attribute instead
-    //glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
-    //glUniform4f(uColor, 0.4824, 0.6784, 0.1490, 1.0); // some green
+    // Send our transformation to the currently bound shader, in the "MVP" uniform
+    // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+    glUniformMatrix4fv(aProjection, 1, GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(aView, 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(aModel, 1, GL_FALSE, &model[0][0]);
     check();
 
     // actual drawing happens here
