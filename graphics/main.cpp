@@ -7,6 +7,7 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <map>
 
 extern "C" {
 //#include <bcm_host.h>
@@ -18,6 +19,10 @@ extern "C" {
 #include <assert.h>
 }
 using namespace std;
+
+// define the number of vertices in the circle
+#define NUM_VERTICES 128
+#define DEFAULT_RADIUS 0.5
 
 // EGL handles
 EGLDisplay display;
@@ -49,14 +54,7 @@ GLuint uColor;
 Display *_xDisplay;
 Window _xWindow;
 
-// a square as a simple triangle fan
-// (it shows as a rectangle without a projection matrix ;) )
-const GLfloat vertexData[] = {
-        -0.5, -0.5, 0.0, 1.0,
-        0.5, -0.5, 0.0, 1.0,
-        0.5, 0.5, 0.0, 1.0,
-        -0.5, 0.5, 0.0, 1.0
-};
+map<string, pair<float, float>> nodePositions;
 
 /*
  * some helper functions / macros
@@ -331,6 +329,38 @@ static void initShaders() {
     uColor = glGetUniformLocation(program, "Color");
 }
 
+float spacingX = DEFAULT_RADIUS * 2 + 0.005;
+float spacingY = 0.875;
+
+float diffX = -3.5f * spacingX;
+float diffY = 6 * spacingY;
+
+float offsetY = 1;
+
+static void initNodePositions() {
+    for (int y = 0; y < 13; ++y) {
+        if (y % 2 == 0) {
+            for (int x = 0; x < 8; ++x) {
+                auto res = nodePositions.insert(make_pair(static_cast<char>('A' + y) + to_string(x),
+                                                          make_pair((float) x * spacingX + diffX,
+                                                                    (float) y * -spacingY + diffY + offsetY)));
+                if (!res.second) {
+                    throw invalid_argument("Cannot add nodePosition!");
+                }
+            }
+        } else {
+            for (int x = 0; x < 7; ++x) {
+                auto res = nodePositions.insert(make_pair(static_cast<char>('A' + y) + to_string(x),
+                                                          make_pair((float) x * spacingX + diffX + spacingX / 2,
+                                                                    (float) y * -spacingY + diffY + offsetY)));
+                if (!res.second) {
+                    throw invalid_argument("Cannot add nodePosition!");
+                }
+            }
+        }
+    }
+}
+
 void setupViewport() {
 /*
    // query size using a broadcom function, raspi only
@@ -346,9 +376,9 @@ void setupViewport() {
 
     // Camera matrix
     view = glm::lookAt(
-            glm::vec3(0,0,10), // Camera in World Space
-            glm::vec3(0,0,0), // and looks at the origin
-            glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+            glm::vec3(0, 0, 17.5), // Camera in World Space
+            glm::vec3(0, 0, 0), // and looks at the origin
+            glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
 
     // Model matrix : an identity matrix (model will be at the origin)
@@ -358,31 +388,22 @@ void setupViewport() {
     check();
 }
 
-void drawSquare() {
-    glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, vertexData);
+void drawSquare(GLfloat squareData[]) {
+    glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, squareData);
     glEnableVertexAttribArray(aPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     check();
 }
 
-// define the number of vertices in the circle
-#define NUM_VERTICES 128
-
-// define the radius of the circle
-#define RADIUS 0.5
-// define the center of the circle
-#define CENTER_X 0.0
-#define CENTER_Y 0.0
-
-void drawCircleShape(GLfloat radius = 0.5) {
+void drawCircleShape(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS) {
     // array to hold the vertices of the circle
     GLfloat vertices[NUM_VERTICES][2];
 
     // calculate the vertices of the circle
     for (int i = 0; i < NUM_VERTICES; i++) {
         GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
-        vertices[i][0] = radius * cos(angle) + CENTER_X;
-        vertices[i][1] = radius * sin(angle) + CENTER_Y;
+        vertices[i][0] = radius * cos(angle) + centerX;
+        vertices[i][1] = radius * sin(angle) + centerY;
     }
 
     // draw the circle using the vertices array
@@ -392,16 +413,28 @@ void drawCircleShape(GLfloat radius = 0.5) {
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     check();
 }
-void drawCircle(string color = "green", GLfloat radius = 0.5){
-    if (color == "green"){
+
+void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, string color = "green", GLfloat radius = DEFAULT_RADIUS) {
+    if (color == "green") {
         glUniform4f(uColor, 0.4824, 0.6784, 0.1490, 1.0); // some green
-    }else if (color == "red"){
+    } else if (color == "red") {
         glUniform4f(uColor, 0.6824, 0.2784, 0.3490, 1.0); // some red
-    }else if (color == "black"){
-        glUniform4f(uColor, 0.0, 0.0, 0.0, 1.0); // some red
+    } else if (color == "black") {
+        glUniform4f(uColor, 0.0, 0.0, 0.0, 1.0); // some black
     }
 
-    drawCircleShape(radius);
+    drawCircleShape(centerX, centerY, radius);
+}
+
+void drawCircleByName(string name, string color) {
+    auto res = nodePositions.find(name);
+    if (res == nodePositions.end()) {
+        throw invalid_argument("Cannot draw circle: Name '"+name+"' wasn't found!");
+        return;
+    }
+    const float x = res->second.first;
+    const float y = res->second.second;
+    drawCircle( x, y, color);
 }
 
 static void draw() {
@@ -420,16 +453,32 @@ static void draw() {
     glUniformMatrix4fv(aModel, 1, GL_FALSE, &model[0][0]);
     check();
 
-    // actual drawing happens here
+    // a square as a simple triangle fan
+    // (it shows as a rectangle without a projection matrix ;) )
+    GLfloat squareData[] = {
+            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,
+            4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,
+            4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0,
+            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0
+    };
     glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
-    drawSquare();
+    drawSquare(squareData);
 
-    drawCircle("green");
-    drawCircle("red", 0.4);
-    drawCircle("black", 0.1);
-
-
-
+    /*
+    for (const pair<string, pair<float, float>> &nodePos: nodePositions) {
+        drawCircleByName(nodePos.first, "green");
+    }
+     */
+    drawCircleByName("A2", "green");
+    drawCircleByName("A5", "green");
+    drawCircleByName("B2", "green");
+    drawCircleByName("B3", "green");
+    drawCircleByName("B4", "green");
+    drawCircleByName("C3", "green");
+    drawCircleByName("C4", "green");
+    drawCircleByName("D2", "green");
+    drawCircleByName("D3", "green");
+    drawCircleByName("D4", "green");
 
     check();
 
@@ -454,6 +503,9 @@ int main() {
 
     initShaders();
     cout << "Shaders initialized." << endl;
+
+    initNodePositions();
+    cout << "Node positions initialized." << endl;
 
     setupViewport();
     cout << "Viewport set up." << endl;
