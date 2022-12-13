@@ -1,8 +1,11 @@
 #version 100
 precision mediump float;
-attribute vec4 vertex;
+attribute vec4 Position;
+uniform mat4 Projection;
+uniform mat4 View;
+uniform mat4 Model;
 
 void main(void) {
-    vec4 pos = vertex;
-    gl_Position = pos;
+    //gl_Position = Position;
+    gl_Position = Projection * View * Model * Position;
 }
