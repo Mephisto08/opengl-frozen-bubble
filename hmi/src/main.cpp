@@ -173,6 +173,13 @@ void  render()
 
 Renderable* sphereRenderable = nullptr;
 Renderable* sphereRenderable2 = nullptr;
+Renderable* sphereRenderable3 = nullptr;
+Renderable* sphereRenderable4 = nullptr;
+Renderable* sphereRenderable5 = nullptr;
+Renderable* sphereRenderable6 = nullptr;
+Renderable* sphereRenderable7 = nullptr;
+Renderable* sphereRenderable8 = nullptr;
+
 Camera* camera;
 
 void initscene(){
@@ -191,19 +198,32 @@ void initscene(){
         bool calcnormals = false;
         bool calctangents = false;
 
-        OBJResult sphereResult = OBJLoader::loadOBJ("/home/osboxes/Desktop/hmi/assets/sphere.obj", calcnormals, calctangents);
+        OBJResult sphereResult = OBJLoader::loadOBJ("/home/osboxes/opengl-frozen-bubble/hmi/assets/sphere.obj", calcnormals, calctangents);
         std::vector<OBJMesh> sphereMeshes = sphereResult.objects.at(0).meshes;
 
         sphereRenderable = new Renderable(sphereMeshes);
-
         sphereRenderable2 = new Renderable(sphereMeshes);
+        sphereRenderable3 = new Renderable(sphereMeshes);
+        sphereRenderable4 = new Renderable(sphereMeshes);
+        sphereRenderable5 = new Renderable(sphereMeshes);
+        sphereRenderable6 = new Renderable(sphereMeshes);
+        sphereRenderable7 = new Renderable(sphereMeshes);
+        sphereRenderable8 = new Renderable(sphereMeshes);
+
 
         camera = new Camera(1280.0f, 720.0f, 60.0f, 0.1f, 100.0f, nullptr);
-        camera->setPosition(glm::vec3(0.0f,10.0f,0.0f));
+        camera->setPosition(glm::vec3(0.0f,35.0f,0.0f));
         camera->setRotation(glm::quat(glm::vec3(glm::radians(270.0f),0.0f,0.0f)));
 
-        sphereRenderable2->translate(glm::vec3(5.0f, 0.0f,0.0f));
-        sphereRenderable->scale(glm::vec3(1.0));
+        sphereRenderable->translate(glm::vec3(7.0f, 0.0f,-10.0f));
+        sphereRenderable2->translate(glm::vec3(5.0f, 0.0f,-10.0f));
+        sphereRenderable3->translate(glm::vec3(3.0f, 0.0f,-10.0f));
+        sphereRenderable4->translate(glm::vec3(1.0f, 0.0f,-10.0f));
+        sphereRenderable5->translate(glm::vec3(-1.0f, 0.0f,-10.0f));
+        sphereRenderable6->translate(glm::vec3(-3.0f, 0.0f,-10.0f));
+        sphereRenderable7->translate(glm::vec3(-5.0f, 0.0f,-10.0f));
+        sphereRenderable8->translate(glm::vec3(-7.0f, 0.0f,-10.0f));
+
       }
       catch (std::exception &ex) {
         throw std::logic_error("Scene initialization failed:\n" + std::string(ex.what()) + "\n");
@@ -251,14 +271,18 @@ void renderNew(GLuint shaderProgram) {
    
    sphereRenderable->render(id);
    sphereRenderable2->render(id);
+   sphereRenderable3->render(id);
+   sphereRenderable4->render(id);
+   sphereRenderable5->render(id);
+   sphereRenderable6->render(id);
+   sphereRenderable7->render(id);
+   sphereRenderable8->render(id);
+
 
    camera->bind(id);
 
    auto pos1 = sphereRenderable->getPosition();
-   std::cout << pos1.x << pos1.y << pos1.z << std::endl;
-
    auto pos2 = sphereRenderable2->getPosition();
-   std::cout << pos2.x << pos2.y << pos2.z << std::endl;
 
    eglSwapBuffers ( egl_display, egl_surface );  // get the rendered buffer to the screen
 }
@@ -399,8 +423,8 @@ int  main()
 
    ///////  the openGL part  ///////////////////////////////////////////////////////////////
 
-   GLuint vertexShader   = load_shader (  GL_VERTEX_SHADER,"shaders/vertex.glsl" );     // load vertex shader
-   GLuint fragmentShader = load_shader (  GL_FRAGMENT_SHADER,"shaders/fragment.glsl" );  // load fragment shader
+   GLuint vertexShader   = load_shader (  GL_VERTEX_SHADER, "/home/osboxes/opengl-frozen-bubble/hmi/shaders/vertex.glsl" );     // load vertex shader
+   GLuint fragmentShader = load_shader (  GL_FRAGMENT_SHADER,"../shaders/fragment.glsl" );  // load fragment shader
 
    GLuint shaderProgram  = glCreateProgram ();                 // create program object
    glAttachShader ( shaderProgram, vertexShader );             // and attach both...
