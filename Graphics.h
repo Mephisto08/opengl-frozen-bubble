@@ -13,6 +13,7 @@
 #include <map>
 #include "Node.h"
 #include "Color.h"
+#include "Game.h"
 
 extern "C" {
 //#include <bcm_host.h>
@@ -66,6 +67,13 @@ private:
     // node screen positions
     map<string, pair<float, float>> nodePositions;
 
+    // Game instance
+    Game game;
+
+    //Mouse coordinates
+    float mouse_posX;
+    float mouse_posY;
+
     float spacingX = DEFAULT_RADIUS * 2 + 0.005;
     float spacingY = 0.875;
 
@@ -91,7 +99,7 @@ private:
 public:
     Graphics();
 
-    void draw(map<string, Node> nodes);
+    void draw();
     void handleXEvents();
 };
 

@@ -1,6 +1,9 @@
 #include "Graphics.h"
 
 Graphics::Graphics() {
+
+    game.start();
+
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 
@@ -33,13 +36,19 @@ void Graphics::resize() {
     _width = gwa.width;
     _height = gwa.height;
     glViewport(0, 0, _width, _height);
-
+    //std::cout << "Actual width & height: " << _width << " " << _height << std::endl;
     // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
     projection = glm::perspective(glm::radians(45.0f), (float) _width / (float) _height, 0.1f, 100.0f);
 }
 
 void Graphics::handleXEvents() {
     bool quit = false;
+    glm::vec4 test = glm::vec4(1);
+
+    float xclip = 0;
+    float yclip = 0;
+
+    glm::vec3 test2 = glm::vec3(1);
     // under Raspberry Pi 4 we can process keys from X11
     while (XPending(_xDisplay)) {   // check for events from the x-server
         XEvent xev;
@@ -55,8 +64,16 @@ void Graphics::handleXEvents() {
                 break;
             case ButtonPress:
                 switch (xev.xbutton.button) {
-                    case 4:// left mouse button or touch screen
-                        std::cout << "Up" << std::endl;
+                    case 1:// left mouse button or touch screen
+                        //std::cout << "Up" << std::endl;
+                        mouse_posX = xev.xbutton.x;
+                        mouse_posY = xev.xbutton.y;
+                        std::cout<< "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
+                        test = glm::inverse(view) * (glm::inverse(projection) * glm::vec4(mouse_posX, mouse_posY, 0.0f, 1.0f));
+                        test2 = glm::unProject(glm::vec3(mouse_posX,mouse_posY,1.0f),view*model,projection,glm::vec4(0, 0, _width, _height));
+                        xclip = (2.0f * mouse_posX) / 800 - 1.0f;
+                        yclip = 1.0f - (2.0f * mouse_posY) / 600;
+                        game.shoot('I',3);
                         break;
                     case 5:// left mouse button or touch screen
                         std::cout << "Down" << std::endl;
@@ -285,6 +302,8 @@ void Graphics::initNodePositions() {
     nodePositions.insert(make_pair("QUEUE_0",
                                               make_pair((float) 3.5 * spacingX + diffX,
                                                         (float) 13.5 * -spacingY + diffY + offsetY)));
+
+    std::cout << "X Position: " << (float)3.5 * spacingX + diffX << " Y Position: " << (float)13.5 * -spacingY + diffY + offsetY << std::endl;
     nodePositions.insert(make_pair("QUEUE_1",
                                               make_pair((float) 5 * spacingX + diffX,
                                                         (float) 14 * -spacingY + diffY + offsetY)));
@@ -377,7 +396,9 @@ void Graphics::drawCircleByName(string name, Color color) {
     drawCircle(x, y);
 }
 
-void Graphics::draw(map<string, Node> nodes) {
+void Graphics::draw() {
+    map<string, Node> nodes = game.getCurrentLevel().getGraph().getNodes();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     check();
 

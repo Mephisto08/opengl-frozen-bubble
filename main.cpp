@@ -1,16 +1,15 @@
-#include "Game.h"
 #include "Graphics.h"
 using namespace std;
 
 int main() {
-    Game game;
+
     Graphics graphics;
 
-    game.start();
+
 
     //game.getCurrentLevel().getGraph().getNode("QUEUE_1");
 
-    game.shoot('C', 5);
+    //game.shoot('C', 5);
     //game.shoot('A', 3, game.stringToColor("ORANGE"));
     //game.shoot('A', 6, game.stringToColor("ORANGE"));
     //game.shoot('I', 3, game.stringToColor("ORANGE"));
@@ -21,6 +20,6 @@ int main() {
     while (true) {
         //we usually run our own event loop in OpenGL ES2
         graphics.handleXEvents();
-        graphics.draw(game.getCurrentLevel().getGraph().getNodes());
+        graphics.draw();
     }
 }

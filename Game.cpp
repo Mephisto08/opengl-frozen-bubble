@@ -105,8 +105,8 @@ Color Game::createNewNodeColor() {
 void Game::shoot(char row, int column) {
     string nodeName = row + to_string(column);
 
-    cout << "\nBEFORE:" << endl;
-    currentLevel.print();
+    //cout << "\nBEFORE:" << endl;
+    //currentLevel.print();
 
     Color newNodeColor = currentLevel.getGraph().getNode("QUEUE_0")->getColor();
 
@@ -122,8 +122,8 @@ void Game::shoot(char row, int column) {
     currentLevel.checkLine(nodeName);
     currentLevel.removeDroppedNodes();
 
-    cout << "\nAFTER:" << endl;
-    currentLevel.print();
+    //cout << "\nAFTER:" << endl;
+    //currentLevel.print();
 
     if (currentLevel.isWon()) {
         cout << "WINNER WINNER CHICKEN DINNER!" << endl;
