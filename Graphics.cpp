@@ -3,6 +3,8 @@
 Graphics::Graphics() {
 
     game.start();
+    cout << "Scheise" << endl;
+    game.shoot('C', 5);
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 

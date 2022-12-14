@@ -98,7 +98,7 @@ Color Game::createNewNodeColor() {
     currentLevel.calculateCurrentColors();
     int r = rand() % currentLevel.getCurrentColors().size();
     auto it = currentLevel.getCurrentColors().begin();
-    std::advance(it, r-1);
+    std::advance(it, r);
     return stringToColor(it->first);
 }
 
