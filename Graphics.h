@@ -26,6 +26,9 @@ extern "C" {
 }
 using namespace std;
 
+#define FOV_Y 45.0f
+#define LOOKAT_Z 17.5
+
 #define NUM_VERTICES 128 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 
@@ -96,6 +99,7 @@ private:
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
+    pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:
     Graphics();
