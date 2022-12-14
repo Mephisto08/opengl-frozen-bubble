@@ -1,7 +1,6 @@
 #include "Graphics.h"
 
 Graphics::Graphics() {
-
     game.start();
 
     cout << "Initializing OpenGL ES..." << endl;
@@ -10,11 +9,11 @@ Graphics::Graphics() {
     cout << "Initializing shaders..." << endl;
     initShaders();
 
-    cout << "Setting up viewport..." << endl;
-    setupViewport();
-
     cout << "Initializing node screen positions..." << endl;
     initNodePositions();
+
+    cout << "Setting up viewport..." << endl;
+    setupViewport();
 }
 
 void Graphics::showCompilerLog(GLint shader) {
@@ -38,7 +37,21 @@ void Graphics::resize() {
     glViewport(0, 0, _width, _height);
     //std::cout << "Actual width & height: " << _width << " " << _height << std::endl;
     // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-    projection = glm::perspective(glm::radians(45.0f), (float) _width / (float) _height, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(FOV_Y), (float) _width / (float) _height, 0.1f, 100.0f);
+}
+
+pair<float, float> Graphics::screenToWorld(int screenPosX, int screenPosY) {
+    float aspect = (float) _width / (float) _height;
+    float radFovY = FOV_Y/180*M_PI;
+    float radFovX = 2*atan(tan(radFovY/2)*aspect);
+    float worldWidth = static_cast<float>(tan(radFovX/2)*LOOKAT_Z*2);
+
+    int normalizedScreenX = (screenPosX-_width/2);
+    int normalizedScreenY = (screenPosY-_height/2);
+
+    float worldX = (float) normalizedScreenX / (float)_width * worldWidth;
+    float worldY = (float) -normalizedScreenY / (float)_width * worldWidth;
+    return make_pair(worldX, worldY);
 }
 
 void Graphics::handleXEvents() {
@@ -63,14 +76,12 @@ void Graphics::handleXEvents() {
                 break;
             case ButtonPress:
                 switch (xev.xbutton.button) {
-                    case 1:// left mouse button or touch screen
-                        //std::cout << "Up" << std::endl;
-
-                        mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
-                        mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                        std::cout << "X: " << test2.x << " Y: " << test2.y << std::endl;
-                        //game.shoot('I',3);
+                    case 1: { // left mouse button or touch screen
+                        pair<float, float> mousePos = screenToWorld(xev.xbutton.x, xev.xbutton.y);
+                        mouse_posX = mousePos.first;
+                        mouse_posY = mousePos.second;
                         break;
+                    }
                     case 5:// left mouse button or touch screen
                         std::cout << "Down" << std::endl;
                         break;
@@ -274,10 +285,10 @@ void Graphics::initShaders() {
     GLuint vertexShader = load_shader(GL_VERTEX_SHADER, "shader/vertex.glsl");         // load vertex shader
     GLuint fragmentShader = load_shader(GL_FRAGMENT_SHADER, "shader/fragment.glsl");   // load fragment shader
 
-    check();
+    /* check();
     showCompilerLog(vertexShader);
     check();
-    showCompilerLog(fragmentShader);
+    showCompilerLog(fragmentShader); */
 
     program = glCreateProgram();
     glAttachShader(program, vertexShader);
@@ -285,7 +296,7 @@ void Graphics::initShaders() {
     glLinkProgram(program);
     check();
 
-    showLinkerLog(program);
+    // showLinkerLog(program);
 
     aPosition = glGetAttribLocation(program, "Position");
     aProjection = glGetUniformLocation(program, "Projection");
@@ -299,7 +310,7 @@ void Graphics::initNodePositions() {
                                    make_pair((float) 3.5 * spacingX + diffX,
                                              (float) 13.5 * -spacingY + diffY + offsetY)));
 
-    std::cout << "X Position: " << (float)3.5 * spacingX + diffX << " Y Position: " << (float)13.5 * -spacingY + diffY + offsetY << std::endl;
+    // std::cout << "X Position: " << (float)3.5 * spacingX + diffX << " Y Position: " << (float)13.5 * -spacingY + diffY + offsetY << std::endl;
     nodePositions.insert(make_pair("QUEUE_1",
                                    make_pair((float) 5 * spacingX + diffX,
                                              (float) 14 * -spacingY + diffY + offsetY)));
@@ -337,11 +348,10 @@ void Graphics::setupViewport() {
     // query surface size using EGL, more general
     eglQuerySurface(display, surface, EGL_WIDTH, &screenWidth);
     eglQuerySurface(display, surface, EGL_HEIGHT, &screenHeight);
-    cout << "screen is " << screenWidth << "x" << screenHeight << endl;
 
     // Camera matrix
     view = glm::lookAt(
-            glm::vec3(0, 0, 17.5), // Camera in World Space
+            glm::vec3(0, 0, LOOKAT_Z), // Camera in World Space
             glm::vec3(0, 0, 0), // and looks at the origin
             glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
@@ -395,13 +405,10 @@ void Graphics::drawCircleByName(string name, Color color) {
 
 
 void Graphics::drawLine(){
+    auto world = screenToWorld(_width, _height);
     GLfloat arrowData[] = {
             0.0f,-5.5625f,0.0f,
             mouse_posX,mouse_posY, 0.0f,
-            0.0f, 5.0f, 0.0f,
-            12.87f, 0.0f, 0.0f,
-            12.87f, 0.0f, 0.0f,
-            0.0f, -5.0f, 0.0f
     };
 
     GLuint lineBuffer;
@@ -412,7 +419,7 @@ void Graphics::drawLine(){
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,0);
     glEnableVertexAttribArray(0);
 
-    glDrawArrays(GL_LINES,0,6);
+    glDrawArrays(GL_LINES,0,2);
 
     glDisableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER,0);
