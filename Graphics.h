@@ -71,8 +71,8 @@ private:
     Game game;
 
     //Mouse coordinates
-    float mouse_posX;
-    float mouse_posY;
+    float mouse_posX = 0;
+    float mouse_posY = 0;
 
     float spacingX = DEFAULT_RADIUS * 2 + 0.005;
     float spacingY = 0.875;
@@ -95,6 +95,7 @@ private:
     void drawSquare(GLfloat squareData[]);
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
+    void drawLine();
 
 public:
     Graphics();

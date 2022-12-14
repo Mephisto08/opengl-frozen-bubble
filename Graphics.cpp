@@ -43,19 +43,7 @@ void Graphics::resize() {
 
 void Graphics::handleXEvents() {
     bool quit = false;
-    glm::vec4 test = glm::vec4(1);
 
-    float xclip = 0;
-    float yclip = 0;
-
-    glm::mat4 mvp = glm::mat4(1);
-    glm::mat4 inverseMVP = glm::mat4(1); //glm::inverse(mvp);
-
-    glm::vec4 worldCoords = glm::vec4(1);
-    glm::vec4 clipspace = projection * glm::vec4(xclip,yclip,0,1);
-    glm::vec4 worldspace = view * clipspace;
-
-    glm::vec3 test2 = glm::vec3(1);
     // under Raspberry Pi 4 we can process keys from X11
     while (XPending(_xDisplay)) {   // check for events from the x-server
         XEvent xev;
@@ -63,6 +51,10 @@ void Graphics::handleXEvents() {
         switch (xev.type) {
             case KeyPress:
                 switch (xev.xkey.keycode) {
+                    /*case 65:
+                        glUniform4f(uColor,255.0f, 0.0f, 0.0f, 1.0f);
+                        drawCircle(0, -5.5625);
+                        break; */
                     case 9://ESC
                     case 24://Q
                         exit(0);
@@ -73,20 +65,11 @@ void Graphics::handleXEvents() {
                 switch (xev.xbutton.button) {
                     case 1:// left mouse button or touch screen
                         //std::cout << "Up" << std::endl;
-                        mouse_posX = xev.xbutton.x;
-                        mouse_posY = xev.xbutton.y;
-                        std::cout<< "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
-                        test = glm::inverse(view) * (glm::inverse(projection) * glm::vec4(mouse_posX, mouse_posY, 0.0f, 1.0f));
-                        //test2 = glm::unProject(glm::vec3(mouse_posX,mouse_posY,1.0f),view*model,projection,glm::vec4(0, 0, _width, _height));
-                        test2 = glm::unProject(glm::vec3(mouse_posX,mouse_posY,0.0f), model ,projection,glm::vec4(0, 0, _width, _height));
-                        xclip = 2 * mouse_posX / _width -1;
-                        yclip = 2 * mouse_posY / _height -1;
-                        clipspace = projection * glm::vec4(xclip,yclip,0,1);
-                        worldspace = view * clipspace;
-                        mvp = projection * view * model;
-                        inverseMVP = glm::inverse(mvp);
-                        worldCoords = inverseMVP * glm::vec4(mouse_posX,mouse_posY,0,1.0);
-                        game.shoot('I',3);
+
+                        mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
+                        mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
+                        std::cout << "X: " << test2.x << " Y: " << test2.y << std::endl;
+                        //game.shoot('I',3);
                         break;
                     case 5:// left mouse button or touch screen
                         std::cout << "Down" << std::endl;
@@ -409,6 +392,33 @@ void Graphics::drawCircleByName(string name, Color color) {
     drawCircle(x, y);
 }
 
+
+
+void Graphics::drawLine(){
+    GLfloat arrowData[] = {
+            0.0f,-5.5625f,0.0f,
+            mouse_posX,mouse_posY, 0.0f,
+            0.0f, 5.0f, 0.0f,
+            12.87f, 0.0f, 0.0f,
+            12.87f, 0.0f, 0.0f,
+            0.0f, -5.0f, 0.0f
+    };
+
+    GLuint lineBuffer;
+    glGenBuffers(1,&lineBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER,lineBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(arrowData), arrowData, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,0);
+    glEnableVertexAttribArray(0);
+
+    glDrawArrays(GL_LINES,0,6);
+
+    glDisableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glDeleteBuffers(1,&lineBuffer);
+}
+
 void Graphics::draw() {
     map<string, Node> nodes = game.getCurrentLevel().getGraph().getNodes();
 
@@ -438,6 +448,8 @@ void Graphics::draw() {
     glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
     drawSquare(squareData);
 
+    glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
+    drawLine();
 
     for (const pair<string, Node> &node: nodes) {
         if(node.first != "ROOT") {
