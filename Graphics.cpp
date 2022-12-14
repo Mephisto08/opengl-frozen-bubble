@@ -3,7 +3,6 @@
 Graphics::Graphics() {
 
     game.start();
-
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 
@@ -68,7 +67,6 @@ void Graphics::handleXEvents() {
 
                         mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
                         mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                        std::cout << "X: " << test2.x << " Y: " << test2.y << std::endl;
                         //game.shoot('I',3);
                         break;
                     case 5:// left mouse button or touch screen
