@@ -48,6 +48,13 @@ void Graphics::handleXEvents() {
     float xclip = 0;
     float yclip = 0;
 
+    glm::mat4 mvp = glm::mat4(1);
+    glm::mat4 inverseMVP = glm::mat4(1); //glm::inverse(mvp);
+
+    glm::vec4 worldCoords = glm::vec4(1);
+    glm::vec4 clipspace = projection * glm::vec4(xclip,yclip,0,1);
+    glm::vec4 worldspace = view * clipspace;
+
     glm::vec3 test2 = glm::vec3(1);
     // under Raspberry Pi 4 we can process keys from X11
     while (XPending(_xDisplay)) {   // check for events from the x-server
@@ -70,9 +77,15 @@ void Graphics::handleXEvents() {
                         mouse_posY = xev.xbutton.y;
                         std::cout<< "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
                         test = glm::inverse(view) * (glm::inverse(projection) * glm::vec4(mouse_posX, mouse_posY, 0.0f, 1.0f));
-                        test2 = glm::unProject(glm::vec3(mouse_posX,mouse_posY,1.0f),view*model,projection,glm::vec4(0, 0, _width, _height));
-                        xclip = (2.0f * mouse_posX) / 800 - 1.0f;
-                        yclip = 1.0f - (2.0f * mouse_posY) / 600;
+                        //test2 = glm::unProject(glm::vec3(mouse_posX,mouse_posY,1.0f),view*model,projection,glm::vec4(0, 0, _width, _height));
+                        test2 = glm::unProject(glm::vec3(mouse_posX,mouse_posY,0.0f), model ,projection,glm::vec4(0, 0, _width, _height));
+                        xclip = 2 * mouse_posX / _width -1;
+                        yclip = 2 * mouse_posY / _height -1;
+                        clipspace = projection * glm::vec4(xclip,yclip,0,1);
+                        worldspace = view * clipspace;
+                        mvp = projection * view * model;
+                        inverseMVP = glm::inverse(mvp);
+                        worldCoords = inverseMVP * glm::vec4(mouse_posX,mouse_posY,0,1.0);
                         game.shoot('I',3);
                         break;
                     case 5:// left mouse button or touch screen
@@ -369,7 +382,7 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     GLfloat vertices[NUM_VERTICES][2];
 
     // calculate the vertices of the circle
-    for (int i = 0; i < NUM_VERTICES; i++) {
+        for (int i = 0; i < NUM_VERTICES; i++) {
         GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
         vertices[i][0] = radius * cos(angle) + centerX;
         vertices[i][1] = radius * sin(angle) + centerY;
@@ -379,7 +392,7 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(aPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
+    //glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     check();
 }
 
@@ -431,6 +444,10 @@ void Graphics::draw() {
             drawCircleByName(node.first, node.second.getColor());
         }
     }
+
+    glUniform4f(uColor, 255.0f, 0.0f, 0.0f, 1.0f);
+    //drawCircle(-5.96f,1.875f, 0.5f);
+    //drawCircle(0.0f,-5.5625f, 0.5f);
 
     check();
 
