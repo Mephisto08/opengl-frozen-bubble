@@ -64,12 +64,12 @@ void Graphics::handleXEvents() {
             case ButtonPress:
                 switch (xev.xbutton.button) {
                     case 1:// left mouse button or touch screen
-                        //std::cout << "Up" << std::endl;
-
                         mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
                         mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                        std::cout << "X: " << test2.x << " Y: " << test2.y << std::endl;
-                        //game.shoot('I',3);
+                        std::cout << "MX: " << xev.xbutton.x << std::endl;
+                        std::cout << "MY: " << xev.xbutton.y << std::endl;
+                        std::cout << "SW: " << _width << std::endl;
+                        std::cout << "SH: " << _height << std::endl;
                         break;
                     case 5:// left mouse button or touch screen
                         std::cout << "Down" << std::endl;
