@@ -3,8 +3,7 @@
 Graphics::Graphics() {
 
     game.start();
-    cout << "Scheise" << endl;
-    game.shoot('C', 5);
+
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 
@@ -69,6 +68,7 @@ void Graphics::handleXEvents() {
 
                         mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
                         mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
+                        std::cout << "X: " << test2.x << " Y: " << test2.y << std::endl;
                         //game.shoot('I',3);
                         break;
                     case 5:// left mouse button or touch screen
@@ -296,13 +296,13 @@ void Graphics::initShaders() {
 
 void Graphics::initNodePositions() {
     nodePositions.insert(make_pair("QUEUE_0",
-                                              make_pair((float) 3.5 * spacingX + diffX,
-                                                        (float) 13.5 * -spacingY + diffY + offsetY)));
+                                   make_pair((float) 3.5 * spacingX + diffX,
+                                             (float) 13.5 * -spacingY + diffY + offsetY)));
 
     std::cout << "X Position: " << (float)3.5 * spacingX + diffX << " Y Position: " << (float)13.5 * -spacingY + diffY + offsetY << std::endl;
     nodePositions.insert(make_pair("QUEUE_1",
-                                              make_pair((float) 5 * spacingX + diffX,
-                                                        (float) 14 * -spacingY + diffY + offsetY)));
+                                   make_pair((float) 5 * spacingX + diffX,
+                                             (float) 14 * -spacingY + diffY + offsetY)));
     for (int y = 0; y < 13; ++y) {
         if (y % 2 == 0) {
             for (int x = 0; x < 8; ++x) {
@@ -365,7 +365,7 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     GLfloat vertices[NUM_VERTICES][2];
 
     // calculate the vertices of the circle
-        for (int i = 0; i < NUM_VERTICES; i++) {
+    for (int i = 0; i < NUM_VERTICES; i++) {
         GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
         vertices[i][0] = radius * cos(angle) + centerX;
         vertices[i][1] = radius * sin(angle) + centerY;
