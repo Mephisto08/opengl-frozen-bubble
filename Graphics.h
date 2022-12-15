@@ -27,6 +27,9 @@ extern "C" {
 }
 using namespace std;
 
+#define FOV_Y 45.0f
+#define LOOKAT_Z 17.5
+
 #define NUM_VERTICES 128 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 
@@ -106,6 +109,8 @@ private:
     glm::vec3 crossProduct(glm::vec3 vec1, glm::vec3 vec2);
     glm::vec3 intersectLine(glm::vec3 borderBottom, glm::vec3 borderTop, glm::vec3 shootStart, glm::vec3 shootEnd);
     glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder, glm::vec3 lineStart, glm::vec3 lineEnd);
+    pair<float, float> screenToWorld(int screenPosX, int screenPosY);
+
 public:
     Graphics();
 

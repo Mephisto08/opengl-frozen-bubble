@@ -124,3 +124,31 @@ void Level::removeDroppedNodes() {
 Graph &Level::getGraph(){
     return graph;
 }
+
+void Level::calculateCurrentColors() {
+    map <string, int> amountColors;
+    map<string, Node> nodes = graph.getNodes();
+
+    for (const auto& n : nodes){
+        string currentNodeColor = n.second.getColor().colorName;
+
+        // WHITE is default color
+        if (currentNodeColor == "WHITE"){
+            continue;
+        }
+
+        auto it = amountColors.find(currentNodeColor);
+        if(it != amountColors.end()){
+            it->second = it->second + 1;
+        }
+        else{
+            amountColors.insert(make_pair(currentNodeColor, 1));
+        }
+    }
+    currentColors = amountColors;
+}
+
+const map<string, int> &Level::getCurrentColors() const {
+    return currentColors;
+}
+

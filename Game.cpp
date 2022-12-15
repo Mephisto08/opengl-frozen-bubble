@@ -68,38 +68,38 @@ void Game::importLevels() {
 
 Color Game::stringToColor(const string &color) {
     if (color == "ORANGE") {
-        return {240, 143, 17};
+        return {"ORANGE", 240, 143, 17};
     }
     if (color == "BLUE") {
-        return {0, 0, 255};
+        return {"BLUE",0, 0, 255};
     }
     if (color == "GREEN") {
-        return {0, 255, 0};
+        return {"GREEN",0, 255, 0};
     }
     if (color == "PURPLE") {
-        return {166, 32, 240};
+        return {"PURPLE",166, 32, 240};
     }
     if (color == "BLACK") {
-        return {0, 0, 0};
+        return {"BLACK",0, 0, 0};
     }
     if (color == "YELLOW") {
-        return {255, 255, 0};
+        return {"YELLOW",255, 255, 0};
     }
     if (color == "WHITE") {
-        return {255, 255, 255};
+        return {"WHITE",255, 255, 255};
     }
     if (color == "GREY") {
-        return {150, 150, 150};
+        return {"GREY",150, 150, 150};
     }
     return {255, 255, 255};
 }
 
 Color Game::createNewNodeColor() {
-    // TODO: Logik einbauen
-    vector<string> colors = {"ORANGE", "BLUE", "PURPLE", "GREEN", "GREY"};
-
-    int r = rand() % 5 ;
-    return stringToColor(colors[r]);
+    currentLevel.calculateCurrentColors();
+    int r = rand() % currentLevel.getCurrentColors().size();
+    auto it = currentLevel.getCurrentColors().begin();
+    std::advance(it, r);
+    return stringToColor(it->first);
 }
 
 void Game::shoot(char row, int column) {
