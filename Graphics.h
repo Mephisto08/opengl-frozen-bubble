@@ -10,6 +10,7 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/intersect.hpp>
 #include <map>
 #include "Node.h"
 #include "Color.h"
@@ -74,6 +75,11 @@ private:
     float mouse_posX = 0;
     float mouse_posY = 0;
 
+    glm::vec3 intersectionPoint = glm::vec3(0);
+    glm::vec3 newPoint = glm::vec3(0);
+    glm::vec3 startingPoint = glm::vec3(0.0f,-5.5625f,1.0f);
+    glm::vec3 endPoint = glm::vec3(1);
+
     float spacingX = DEFAULT_RADIUS * 2 + 0.005;
     float spacingY = 0.875;
 
@@ -96,7 +102,10 @@ private:
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
-
+    void calculateNewPosition();
+    glm::vec3 crossProduct(glm::vec3 vec1, glm::vec3 vec2);
+    glm::vec3 intersectLine(glm::vec3 borderBottom, glm::vec3 borderTop, glm::vec3 shootStart, glm::vec3 shootEnd);
+    glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder, glm::vec3 lineStart, glm::vec3 lineEnd);
 public:
     Graphics();
 

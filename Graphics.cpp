@@ -41,6 +41,89 @@ void Graphics::resize() {
     projection = glm::perspective(glm::radians(45.0f), (float) _width / (float) _height, 0.1f, 100.0f);
 }
 
+glm::vec3 Graphics::crossProduct(glm::vec3 vec1, glm::vec3 vec2){
+    float x = vec1.y * vec2.z - vec1.z * vec2.y;
+    float y = vec1.z * vec2.x - vec1.x * vec2.z;
+    float z = vec1.x * vec2.y - vec1.y * vec2.x;
+
+    return glm::vec3(x,y,z);
+}
+
+glm::vec3 Graphics::get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder, glm::vec3 lineStart, glm::vec3 lineEnd)
+{
+    float s1_x, s1_y, s2_x, s2_y;
+
+    s1_x = topBorder.x - bottomBorder.x; s1_y = topBorder.y - bottomBorder.y;
+    s2_x = lineEnd.x - lineStart.x; s2_y = lineEnd.y - lineStart.y;
+    float s, t;
+    s = (-s1_y * (bottomBorder.x - lineStart.x) + s1_x * (bottomBorder.y - lineStart.y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = ( s2_x * (bottomBorder.y - lineStart.y) - s2_y * (bottomBorder.x - lineStart.x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+    float i_x = 0;
+    float i_y = 0;
+    //if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    //{
+        i_x = bottomBorder.x + (t * s1_x);
+        i_y = bottomBorder.y + (t * s1_y);
+    //}
+
+    return glm::vec3(i_x,i_y,0.0f);
+}
+
+glm::vec3 Graphics::intersectLine(glm::vec3 borderBottom, glm::vec3 borderTop, glm::vec3 shootStart, glm::vec3 shootEnd){
+    glm::vec3 lineDir1 = borderTop - borderBottom;
+    glm::vec3 lineDir2 = shootEnd - shootStart;
+
+    float t1 = glm::dot(shootStart - borderBottom, lineDir2) / glm::dot(lineDir1,lineDir2);
+    float t2 = glm::dot(borderBottom - shootStart, lineDir1) / glm::dot(lineDir2,lineDir1);
+
+    return borderBottom + t2 * lineDir2;
+}
+
+void Graphics::calculateNewPosition(){
+    glm::vec3 bottomL = glm::vec3(-4.01999998f,-4.7750001, 1.0f);
+    glm::vec3 bottomR = glm::vec3(4.01999998f,-4.7750001, 1.0f);
+    glm::vec3 topR = glm::vec3(4.01999998f,6.7750001f, 1.0f);
+    glm::vec3 topL = glm::vec3(-4.01999998f,6.7750001f, 1.0f);
+
+    glm::vec3 borderDir = glm::vec3(1);
+    if(mouse_posX < 0){
+        intersectionPoint = get_line_intersection(bottomL, topL, startingPoint,endPoint);
+        glm::vec3 R =  bottomL - topL ;
+        glm::vec3 N = glm::vec3(R.y,-R.x,0.0f);
+        glm::vec3 dir = endPoint - startingPoint ;
+        auto test = glm::dot(R,N);
+        glm::vec3 reflection = 2.0f * dot(dir,N) - N;
+        reflection = glm::normalize(reflection);
+        auto angle = glm::dot(dir,N);
+        auto angle2 = ::acos(angle);
+
+        std::cout << "Angle: " << angle << std::endl;
+        newPoint = intersectionPoint + reflection * 2.0f;
+
+    }
+    if(mouse_posX > 0){
+        intersectionPoint = get_line_intersection(bottomR, topR, startingPoint,endPoint);
+    }
+
+
+
+
+    std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
+    //auto inter = intersectLine(bottomL,topL,glm::vec3(0.0f,-5.5625f,1.0f),glm::vec3(mouse_posX,mouse_posY,1.0f));
+    //std::cout << "New Intersect-> X: " << inter.x << " Y: " << inter.y << std::endl;
+    //glm::vec3 root_mouse_dir = glm::cross(glm::vec3(mouse_posX,mouse_posY,1.0f),glm::vec3(0.0f,-5.5625f,1.0f));
+    //auto t = crossProduct(bl_tl_dir,root_mouse_dir);
+
+    //glm::vec3 intersection =  glm::cross(borderDir, root_mouse_dir);
+    //if(intersection.z != 0) {
+        //std::cout << "Intersection-> X: " << intersection.x << " Y:" << intersection.y << std::endl;
+    /*}
+    else{
+        std::cout << " No intersection" << std::endl;
+    } */
+}
+
 void Graphics::handleXEvents() {
     bool quit = false;
 
@@ -48,38 +131,43 @@ void Graphics::handleXEvents() {
     while (XPending(_xDisplay)) {   // check for events from the x-server
         XEvent xev;
         XNextEvent(_xDisplay, &xev);
-        switch (xev.type) {
-            case KeyPress:
-                switch (xev.xkey.keycode) {
-                    /*case 65:
-                        glUniform4f(uColor,255.0f, 0.0f, 0.0f, 1.0f);
-                        drawCircle(0, -5.5625);
-                        break; */
-                    case 9://ESC
-                    case 24://Q
-                        exit(0);
-                        break;
-                }
-                break;
-            case ButtonPress:
-                switch (xev.xbutton.button) {
-                    case 1:// left mouse button or touch screen
-                        //std::cout << "Up" << std::endl;
-
-                        mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
-                        mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                        std::cout << "X: " << test2.x << " Y: " << test2.y << std::endl;
-                        //game.shoot('I',3);
-                        break;
-                    case 5:// left mouse button or touch screen
-                        std::cout << "Down" << std::endl;
-                        break;
-                }
-                break;
-            case Expose:
-            case PropertyNotify:
-                resize();
-                break;
+        if(xev.type == MotionNotify ){
+            //std::cout << "X: " << xev.xmotion.x  << " Y: " << xev.xmotion.y  << std::endl;
+            mouse_posX = (xev.xmotion.x - 960) / 960.0f * 12.87f;
+            mouse_posY = -(xev.xmotion.y - 540) / 960.0f * 12.87f;
+            endPoint = glm::vec3(mouse_posX,mouse_posY,1.0f);
+            calculateNewPosition();
+            //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
+        }
+        if(xev.type == KeyPress) {
+            switch (xev.xkey.keycode) {
+                /*case 65:
+                    glUniform4f(uColor,255.0f, 0.0f, 0.0f, 1.0f);
+                    drawCircle(0, -5.5625);
+                    break; */
+                case 9://ESC
+                case 24://Q
+                    exit(0);
+                    break;
+            }
+        }
+        if(xev.type == ButtonPress){
+            switch (xev.xbutton.button) {
+                case 1:// left mouse button or touch screen
+                    //mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
+                    //mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
+                    std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
+                    //game.shoot('I',3);
+                    break;
+            }
+        }
+        if(xev.type == ButtonRelease){
+            //game.shoot();
+        }
+        if(xev.type == Expose){}
+        if(xev.type == PropertyNotify){
+            resize();
+            break;
         }
     }
 }
@@ -398,11 +486,14 @@ void Graphics::drawLine(){
     GLfloat arrowData[] = {
             0.0f,-5.5625f,0.0f,
             mouse_posX,mouse_posY, 0.0f,
-            0.0f, 5.0f, 0.0f,
-            12.87f, 0.0f, 0.0f,
-            12.87f, 0.0f, 0.0f,
-            0.0f, -5.0f, 0.0f
+            intersectionPoint.x, intersectionPoint.y, 0.0f,
+            newPoint.x, newPoint.y, 0.0f,
     };
+
+    //0.0f, 5.0f, 0.0f,
+    //12.87f, 0.0f, 0.0f,
+    //12.87f, 0.0f, 0.0f,
+    //0.0f, -5.0f, 0.0f
 
     GLuint lineBuffer;
     glGenBuffers(1,&lineBuffer);
@@ -412,7 +503,7 @@ void Graphics::drawLine(){
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,0);
     glEnableVertexAttribArray(0);
 
-    glDrawArrays(GL_LINES,0,6);
+    glDrawArrays(GL_LINES,0,4);
 
     glDisableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER,0);
