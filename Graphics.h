@@ -106,9 +106,8 @@ private:
     void drawCircleByName(string name, Color color);
     void drawLine();
     void calculateNewPosition();
-    glm::vec3 crossProduct(glm::vec3 vec1, glm::vec3 vec2);
-    glm::vec3 intersectLine(glm::vec3 borderBottom, glm::vec3 borderTop, glm::vec3 shootStart, glm::vec3 shootEnd);
-    glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder, glm::vec3 lineStart, glm::vec3 lineEnd);
+    glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
+    glm::vec3 calculateReflectionDir(glm::vec3 bottom, glm::vec3 top);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:

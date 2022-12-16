@@ -54,43 +54,37 @@ pair<float, float> Graphics::screenToWorld(int screenPosX, int screenPosY) {
     return make_pair(worldX, worldY);
 }
 
-glm::vec3 Graphics::crossProduct(glm::vec3 vec1, glm::vec3 vec2){
-    float x = vec1.y * vec2.z - vec1.z * vec2.y;
-    float y = vec1.z * vec2.x - vec1.x * vec2.z;
-    float z = vec1.x * vec2.y - vec1.y * vec2.x;
 
-    return glm::vec3(x,y,z);
-}
-
-glm::vec3 Graphics::get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder, glm::vec3 lineStart, glm::vec3 lineEnd)
+glm::vec3 Graphics::get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder)
 {
     float s1_x, s1_y, s2_x, s2_y;
 
     s1_x = topBorder.x - bottomBorder.x; s1_y = topBorder.y - bottomBorder.y;
-    s2_x = lineEnd.x - lineStart.x; s2_y = lineEnd.y - lineStart.y;
+    s2_x = endPoint.x - startingPoint.x; s2_y = endPoint.y - startingPoint.y;
     float s, t;
-    s = (-s1_y * (bottomBorder.x - lineStart.x) + s1_x * (bottomBorder.y - lineStart.y)) / (-s2_x * s1_y + s1_x * s2_y);
-    t = ( s2_x * (bottomBorder.y - lineStart.y) - s2_y * (bottomBorder.x - lineStart.x)) / (-s2_x * s1_y + s1_x * s2_y);
+    s = (-s1_y * (bottomBorder.x - startingPoint.x) + s1_x * (bottomBorder.y - startingPoint.y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = ( s2_x * (bottomBorder.y - startingPoint.y) - s2_y * (bottomBorder.x - startingPoint.x)) / (-s2_x * s1_y + s1_x * s2_y);
 
     float i_x = 0;
     float i_y = 0;
-    //if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-    //{
-        i_x = bottomBorder.x + (t * s1_x);
-        i_y = bottomBorder.y + (t * s1_y);
-    //}
+
+    i_x = bottomBorder.x + (t * s1_x);
+    i_y = bottomBorder.y + (t * s1_y);
 
     return glm::vec3(i_x,i_y,0.0f);
 }
 
-glm::vec3 Graphics::intersectLine(glm::vec3 borderBottom, glm::vec3 borderTop, glm::vec3 shootStart, glm::vec3 shootEnd){
-    glm::vec3 lineDir1 = borderTop - borderBottom;
-    glm::vec3 lineDir2 = shootEnd - shootStart;
+glm::vec3 Graphics::calculateReflectionDir(glm::vec3 bottom, glm::vec3 top){
+    intersectionPoint = get_line_intersection(bottom, top);
+    glm::vec3 R =  bottom - top ;
+    glm::vec3 N = glm::vec3(R.y,-R.x,0.0f);
+    N = glm::normalize(N);
+    glm::vec3 dir = endPoint - startingPoint ;
+    auto test = glm::dot(R,N);
+    glm::vec3 reflection = dir - 2.0f * dot(dir,N) * N;
+    reflection = glm::normalize(reflection);
 
-    float t1 = glm::dot(shootStart - borderBottom, lineDir2) / glm::dot(lineDir1,lineDir2);
-    float t2 = glm::dot(borderBottom - shootStart, lineDir1) / glm::dot(lineDir2,lineDir1);
-
-    return borderBottom + t2 * lineDir2;
+    return reflection;
 }
 
 void Graphics::calculateNewPosition(){
@@ -98,27 +92,20 @@ void Graphics::calculateNewPosition(){
     glm::vec3 bottomR = glm::vec3(4.01999998f,-4.7750001, 1.0f);
     glm::vec3 topR = glm::vec3(4.01999998f,6.7750001f, 1.0f);
     glm::vec3 topL = glm::vec3(-4.01999998f,6.7750001f, 1.0f);
-
+    glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
+    
     if(mouse_posX < 0){
-        intersectionPoint = get_line_intersection(bottomL, topL, startingPoint,endPoint);
-        glm::vec3 R =  bottomL - topL ;
-        glm::vec3 N = glm::vec3(R.y,-R.x,0.0f);
-        N = glm::normalize(N);
-        glm::vec3 dir = endPoint - startingPoint ;
-        auto test = glm::dot(R,N);
-        glm::vec3 reflection = dir - 2.0f * dot(dir,N) * N;
-        reflection = glm::normalize(reflection);
-
-        newPoint = intersectionPoint + reflection * 2.0f;
+        reflectionDir = calculateReflectionDir(bottomL,topL);
+        newPoint = intersectionPoint + reflectionDir * 2.0f;
 
     }
     if(mouse_posX > 0){
-        intersectionPoint = get_line_intersection(bottomR, topR, startingPoint,endPoint);
+        reflectionDir = calculateReflectionDir(bottomR,topR);
+        newPoint = intersectionPoint + reflectionDir * 2.0f;
     }
-    
-    std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 
+    std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
 
 void Graphics::handleXEvents() {
