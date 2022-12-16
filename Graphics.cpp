@@ -87,6 +87,47 @@ glm::vec3 Graphics::calculateReflectionDir(glm::vec3 bottom, glm::vec3 top){
     return reflection;
 }
 
+glm::vec3 Graphics::proj(glm::vec3 a, glm::vec3 b){
+    const float k = glm::dot(a,b) / glm::dot(b,b);
+    return glm::vec3(k*b.x, k * b.y, 0.0f);
+}
+
+float Graphics::hypot2(glm::vec3 a, glm::vec3 b){
+    return glm::dot(a-b,a-b);
+}
+
+float Graphics::calcDistanceFromCircleToEndStart(float x, float y){
+    glm::vec3 circle = glm::vec3(x,y,1.0f);
+    glm::vec3 endToCircle = circle - endPoint;
+    glm::vec3 endToStart = startingPoint - endPoint;
+
+    const glm::vec3 D = endPoint + proj(endToCircle,endToStart);
+
+    const glm::vec3 AD = D - endPoint;
+
+    const float k = abs(endToStart.x) > abs(endToStart.y) ? AD.x / endToStart.x : AD.y / endToStart.y;
+
+    if(k <= 0.0f){
+        return ::sqrt(hypot2(circle,endPoint));
+    }
+    else if(k >= 1.0f ){
+        return ::sqrt(hypot2(circle,startingPoint));
+    }
+
+    return ::sqrt(hypot2(circle,D));
+}
+
+float Graphics::circleIntersection(){
+    for(auto node: nodePositions){
+        float circle_x = node.second.first;
+        float circle_y = node.second.second;
+        float distance = calcDistanceFromCircleToEndStart(circle_x,circle_y);
+        if(distance <= DEFAULT_RADIUS){
+            std::cout << "Deine M: " << node.first << std::endl;
+        }
+    }
+}
+
 void Graphics::calculateNewPosition(){
     glm::vec3 bottomL = glm::vec3(-4.01999998f,-4.7750001, 1.0f);
     glm::vec3 bottomR = glm::vec3(4.01999998f,-4.7750001, 1.0f);
@@ -94,7 +135,7 @@ void Graphics::calculateNewPosition(){
     glm::vec3 topL = glm::vec3(-4.01999998f,6.7750001f, 1.0f);
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
-    
+
     if(mouse_posX < 0){
         reflectionDir = calculateReflectionDir(bottomL,topL);
         newPoint = intersectionPoint + reflectionDir * 2.0f;
@@ -105,7 +146,7 @@ void Graphics::calculateNewPosition(){
         newPoint = intersectionPoint + reflectionDir * 2.0f;
     }
 
-    std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
+    //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
 
 void Graphics::handleXEvents() {
@@ -144,11 +185,19 @@ void Graphics::handleXEvents() {
                     //mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
                     std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
                     //game.shoot('I',3);
+                    circleIntersection();
                     break;
             }
         }
         if(xev.type == ButtonRelease){
             //game.shoot();
+            switch(xev.xbutton.button){
+                case 1:
+                    circleIntersection();
+                    std::cout<< "Test release" << std::endl;
+                    break;
+            }
+
         }
         if(xev.type == Expose){}
         if(xev.type == PropertyNotify){

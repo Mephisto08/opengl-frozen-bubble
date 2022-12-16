@@ -108,6 +108,10 @@ private:
     void calculateNewPosition();
     glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
     glm::vec3 calculateReflectionDir(glm::vec3 bottom, glm::vec3 top);
+    float circleIntersection();
+    glm::vec3 proj(glm::vec3 a, glm::vec3 b);
+    float hypot2(glm::vec3 a, glm::vec3 b);
+    float calcDistanceFromCircleToEndStart(float x, float y);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:
