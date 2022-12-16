@@ -104,37 +104,21 @@ void Graphics::calculateNewPosition(){
         intersectionPoint = get_line_intersection(bottomL, topL, startingPoint,endPoint);
         glm::vec3 R =  bottomL - topL ;
         glm::vec3 N = glm::vec3(R.y,-R.x,0.0f);
+        N = glm::normalize(N);
         glm::vec3 dir = endPoint - startingPoint ;
         auto test = glm::dot(R,N);
-        glm::vec3 reflection = 2.0f * dot(dir,N) - N;
+        glm::vec3 reflection = dir - 2.0f * dot(dir,N) * N;
         reflection = glm::normalize(reflection);
-        auto angle = glm::dot(dir,N);
-        auto angle2 = ::acos(angle);
 
-        std::cout << "Angle: " << angle << std::endl;
         newPoint = intersectionPoint + reflection * 2.0f;
 
     }
     if(mouse_posX > 0){
         intersectionPoint = get_line_intersection(bottomR, topR, startingPoint,endPoint);
     }
-
-
-
-
+    
     std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
-    //auto inter = intersectLine(bottomL,topL,glm::vec3(0.0f,-5.5625f,1.0f),glm::vec3(mouse_posX,mouse_posY,1.0f));
-    //std::cout << "New Intersect-> X: " << inter.x << " Y: " << inter.y << std::endl;
-    //glm::vec3 root_mouse_dir = glm::cross(glm::vec3(mouse_posX,mouse_posY,1.0f),glm::vec3(0.0f,-5.5625f,1.0f));
-    //auto t = crossProduct(bl_tl_dir,root_mouse_dir);
 
-    //glm::vec3 intersection =  glm::cross(borderDir, root_mouse_dir);
-    //if(intersection.z != 0) {
-        //std::cout << "Intersection-> X: " << intersection.x << " Y:" << intersection.y << std::endl;
-    /*}
-    else{
-        std::cout << " No intersection" << std::endl;
-    } */
 }
 
 void Graphics::handleXEvents() {
