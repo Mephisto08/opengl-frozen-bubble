@@ -10,7 +10,6 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/intersect.hpp>
 #include <map>
 #include "Node.h"
 #include "Color.h"
@@ -81,7 +80,12 @@ private:
     glm::vec3 intersectionPoint = glm::vec3(0);
     glm::vec3 newPoint = glm::vec3(0);
     glm::vec3 startingPoint = glm::vec3(0.0f,-5.5625f,1.0f);
-    glm::vec3 endPoint = glm::vec3(1);
+    glm::vec3 endPoint = glm::vec3(0.0f, 10.0f, 1.0f);
+
+    glm::vec3 bottomL = glm::vec3(-4.01999998f,-4.7750001, 1.0f);
+    glm::vec3 bottomR = glm::vec3(4.01999998f,-4.7750001, 1.0f);
+    glm::vec3 topR = glm::vec3(4.01999998f,6.7750001f, 1.0f);
+    glm::vec3 topL = glm::vec3(-4.01999998f,6.7750001f, 1.0f);
 
     float spacingX = DEFAULT_RADIUS * 2 + 0.005;
     float spacingY = 0.875;
