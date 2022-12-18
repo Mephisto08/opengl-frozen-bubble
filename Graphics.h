@@ -77,11 +77,8 @@ private:
     // intersected nodes
     map<string, float> intersectedNodeNames;
 
-    string newNodeToAdd;
-
     // Game instance
     Game game;
-
 
     //Mouse coordinates
     float mouse_posX = 0;
@@ -133,7 +130,7 @@ private:
     glm::vec3 proj(glm::vec3 a, glm::vec3 b);
     float hypot2(glm::vec3 a, glm::vec3 b);
     float calcDistanceFromCircleToEndStart(float x, float y);
-    string findFinalPosition(string hitNode);
+    void findFinalPosition(string hitNode);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
     void resetState();
 

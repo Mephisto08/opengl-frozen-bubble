@@ -130,8 +130,6 @@ void Graphics::findFinalPosition(string hitNode) {
             }
         }
     }
-    newNodeToAdd =  _nodeName;
-
 }
 
 string Graphics::circleIntersection() {
@@ -159,7 +157,7 @@ string Graphics::circleIntersection() {
             }
         }
     }
-    std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
+    // std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
     lastHit = _nodeName;
     return _nodeName;
 }
@@ -167,9 +165,7 @@ string Graphics::circleIntersection() {
 void Graphics::calculateNewPosition(bool showLines) {
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
-
     if (intersectionTimout++ > MAX_INTERSECTION_TIMOUT) return;
-    lastHit = _nodeName;
 
     if (endPoint.x < 0) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
