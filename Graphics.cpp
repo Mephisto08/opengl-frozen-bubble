@@ -117,6 +117,29 @@ float Graphics::calcDistanceFromCircleToEndStart(float x, float y) {
     return ::sqrt(hypot2(circle, D));
 }
 
+string Graphics::findFinalPosition(string hitNode) {
+    float m = (endPoint.y - startingPoint.y) / (endPoint.x - startingPoint.x);
+    double a = tempCircleMiddlePoint.x;
+    double b = tempCircleMiddlePoint.y;
+    float c = startingPoint.y - m * startingPoint.x;
+    float x = 0, y = 0;
+
+    double aa = 1.0 + m*m;
+    double bb = 2.0 * m*c - 2.0*a - 2.0*b*m;
+    double cc = a*a + c*c - 2.0*b*c + b*b - DEFAULT_RADIUS*DEFAULT_RADIUS;
+
+    double discriminant = b*b*bb - 4.0*aa*cc;
+
+    /*if(discriminant < 0){
+        std::cout << "No intersection" << std::endl;
+    }*/
+    if(discriminant <= 0){
+        x = -b*b / (2.0*aa);
+        y = m*x + c;
+        std::cout << "One intersection found: " << " X: " << x << " Y: " << y <<std::endl;
+    }
+}
+
 string Graphics::circleIntersection() {
     vector<string> currentNodes = game.getCurrentLevel().getGraph().getAllNodes();
     float smallestDistance = 100000;
@@ -134,15 +157,19 @@ string Graphics::circleIntersection() {
                     smallestDistance = distanceToCircle;
                     _nodeName = nodeName;
                     shot = false;
+                    tempCircleMiddlePoint = circlePos;
                 }
 
             }
         }
     }
     std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
+    if(_nodeName != "Name"){findFinalPosition(_nodeName);}
 
     return _nodeName;
 }
+
+
 
 void Graphics::calculateNewPosition(bool shot) {
     glm::vec3 reflectionDir = glm::vec3(1);
@@ -180,9 +207,7 @@ void Graphics::calculateNewPosition(bool shot) {
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
 
-string Graphics::findFinalPosition(string hitNode){
 
-}
 
 void Graphics::handleXEvents() {
     bool quit = false;

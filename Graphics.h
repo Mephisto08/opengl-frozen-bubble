@@ -97,6 +97,8 @@ private:
     float offsetY = 1;
 
     bool shot = false;
+    glm::vec3 circleIntersectionPoint = glm::vec3(1);
+    glm::vec3 tempCircleMiddlePoint = glm::vec3(1);
 
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);
