@@ -31,6 +31,7 @@ using namespace std;
 
 #define NUM_VERTICES 128 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
+#define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
 #define check() assert(glGetError() == 0)
 
@@ -77,6 +78,16 @@ private:
     float mouse_posX = 0;
     float mouse_posY = 0;
 
+    glm::vec3 intersectionPoint = glm::vec3(0);
+    glm::vec3 newPoint = glm::vec3(0);
+    glm::vec3 startingPoint = glm::vec3(0.0f,-5.5625f,0.0f);
+    glm::vec3 endPoint = glm::vec3(0.0f, 10.0f, 0.0f);
+
+    glm::vec3 bottomL = glm::vec3(-4.01999998f,-4.7750001, 0.0f);
+    glm::vec3 bottomR = glm::vec3(4.01999998f,-4.7750001, 0.0f);
+    glm::vec3 topR = glm::vec3(4.01999998f,6.7750001f, 0.0f);
+    glm::vec3 topL = glm::vec3(-4.01999998f,6.7750001f, 0.0f);
+
     float spacingX = DEFAULT_RADIUS * 2 + 0.005;
     float spacingY = 0.875;
 
@@ -84,6 +95,8 @@ private:
     float diffY = 6 * spacingY;
 
     float offsetY = 1;
+
+    bool shot = false;
 
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);
@@ -99,6 +112,14 @@ private:
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
+    void calculateNewPosition(bool shot);
+    glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
+    glm::vec3 calculateReflectionDir(glm::vec3 bottom, glm::vec3 top);
+    string circleIntersection();
+    glm::vec3 proj(glm::vec3 a, glm::vec3 b);
+    float hypot2(glm::vec3 a, glm::vec3 b);
+    float calcDistanceFromCircleToEndStart(float x, float y);
+    string findFinalPosition(string hitNode);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:
