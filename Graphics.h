@@ -26,9 +26,12 @@ extern "C" {
 }
 using namespace std;
 
+#define CHEAT_MODE true
+
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
+#define MAX_INTERSECTION_TIMOUT 50
 #define NUM_VERTICES 128 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
@@ -96,9 +99,10 @@ private:
 
     float offsetY = 1;
 
-    bool shot = false;
-
+    string lastHit = "";
+    int intersectionTimout = 0;
     vector<GLfloat> lines = {};
+    glm::vec3 lineColor = glm::vec3(255.0, 0.0, 0.0);
 
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);
@@ -114,7 +118,7 @@ private:
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
-    void calculateNewPosition(bool shot);
+    void calculateNewPosition(bool showLines = false);
     glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
     glm::vec3 calculateReflectionDir(glm::vec3 bottom, glm::vec3 top);
     string circleIntersection();
@@ -123,6 +127,7 @@ private:
     float calcDistanceFromCircleToEndStart(float x, float y);
     string findFinalPosition(string hitNode);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
+    void resetState();
 
 public:
     Graphics();
