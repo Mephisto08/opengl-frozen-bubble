@@ -97,6 +97,8 @@ private:
 
     bool shot = false;
 
+    vector<GLfloat> lines = {};
+
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);
     void resize();
