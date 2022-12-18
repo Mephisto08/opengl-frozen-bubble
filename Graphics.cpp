@@ -148,6 +148,11 @@ void Graphics::calculateNewPosition(bool shot) {
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
 
+    lines.insert(lines.end(), {
+            startingPoint.x, startingPoint.y, 0.0f,
+            endPoint.x, endPoint.y, 0.0f
+    });
+
     if (endPoint.x < 0) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
@@ -198,6 +203,8 @@ void Graphics::handleXEvents() {
             mouse_posX = min(max(mousePos.first, topL.x), topR.x);
             mouse_posY = min(max(mousePos.second, bottomL.y), topL.y);
             endPoint = glm::vec3(mouse_posX, mouse_posY, 1.0f);
+
+            lines.clear();
             calculateNewPosition(shot);
 
             float endY = min(intersectionPoint.y, topL.y);
@@ -561,33 +568,25 @@ void Graphics::drawCircleByName(string name, Color color) {
 
 
 void Graphics::drawLine() {
+    /*
     auto world = screenToWorld(_width, _height);
-
-    GLfloat arrowData[] = {
+    vector<GLfloat> lines = {
             startingPoint.x, startingPoint.y, 0.0f,
             endPoint.x, endPoint.y, 0.0f,
             intersectionPoint.x, intersectionPoint.y, 0.0f,
             newPoint.x, newPoint.y, 0.0f,
     };
-
-    if (intersectionPoint.y > topL.y) {
-        arrowData[6] = arrowData[7] = arrowData[9] = arrowData[10] = 20.0f;
-    }
-
-    //0.0f, 5.0f, 0.0f,
-    //12.87f, 0.0f, 0.0f,
-    //12.87f, 0.0f, 0.0f,
-    //0.0f, -5.0f, 0.0f
+    */
 
     GLuint lineBuffer;
     glGenBuffers(1, &lineBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, lineBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(arrowData), arrowData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, lines.size() * sizeof(lines[0]), &lines[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    glDrawArrays(GL_LINES, 0, 4);
+    glDrawArrays(GL_LINES, 0, lines.size()/3);
 
     glDisableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
