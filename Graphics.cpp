@@ -65,6 +65,7 @@ glm::vec3 Graphics::get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topB
     float s, t;
     s = (-s1_y * (bottomBorder.x - startingPoint.x) + s1_x * (bottomBorder.y - startingPoint.y)) /
         (-s2_x * s1_y + s1_x * s2_y);
+
     t = (s2_x * (bottomBorder.y - startingPoint.y) - s2_y * (bottomBorder.x - startingPoint.x)) /
         (-s2_x * s1_y + s1_x * s2_y);
 
@@ -100,7 +101,7 @@ float Graphics::hypot2(glm::vec3 a, glm::vec3 b) {
 }
 
 float Graphics::calcDistanceFromCircleToEndStart(float x, float y) {
-    glm::vec3 circle = glm::vec3(x, y, 1.0f);
+    glm::vec3 circle = glm::vec3(x, y, 0.0f);
     glm::vec3 endToCircle = circle - endPoint;
     glm::vec3 endToStart = startingPoint - endPoint;
 
@@ -122,8 +123,12 @@ string Graphics::circleIntersection() {
     string _nodeName = "Name";
     for (string nodeName: currentNodes) {
         if (nodeName != "QUEUE_0" && nodeName != "QUEUE_1" && nodeName != "ROOT") {
+            if (nodeName == "H3"){
+                cout << "hier"<< endl;
+            }
             pair<float, float> node = nodePositions.find(nodeName)->second;
             glm::vec3 circlePos = glm::vec3(node.first, node.second, 0.0f);
+
             float distance = calcDistanceFromCircleToEndStart(circlePos.x, circlePos.y);
 
             if (distance <= DEFAULT_RADIUS) {
@@ -147,7 +152,8 @@ void Graphics::calculateNewPosition(bool shot) {
 
     if (endPoint.x < 0) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
-        newPoint = intersectionPoint + reflectionDir * 20.0f;
+        newPoint = intersectionPoint + reflectionDir * 15.0f;
+        endPoint = intersectionPoint;
         if(shot){
         if(circleIntersection() == "Name"){
             startingPoint = endPoint;
@@ -157,9 +163,10 @@ void Graphics::calculateNewPosition(bool shot) {
         }
 
     }
-    if (endPoint.x  > 0) {
+    else if (endPoint.x  > 0) {
         reflectionDir = calculateReflectionDir(bottomR, topR);
-        newPoint = intersectionPoint + reflectionDir * 20.0f;
+        newPoint = intersectionPoint + reflectionDir * 15.0f;
+        endPoint = intersectionPoint;
         //std::cout << "Starting Point x: " << startingPoint.x << " Starting Point y: " << startingPoint.y<< std::endl;
         //std::cout << "End Point x: " << endPoint.x << " End Point y: " << endPoint.y<< std::endl;
         if(shot) {
