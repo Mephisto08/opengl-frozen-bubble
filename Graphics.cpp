@@ -130,63 +130,74 @@ string Graphics::circleIntersection() {
 
             if (distance <= DEFAULT_RADIUS) {
                 float distanceToCircle = glm::length(circlePos - startingPoint);
-                if(distanceToCircle < smallestDistance){
+                if (distanceToCircle < smallestDistance) {
                     smallestDistance = distanceToCircle;
                     _nodeName = nodeName;
-                    shot = false;
                 }
 
             }
         }
     }
-    std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
-
+    lastHit = _nodeName;
+    //std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
     return _nodeName;
 }
 
-void Graphics::calculateNewPosition(bool shot) {
+void Graphics::calculateNewPosition(bool showLines) {
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
-
-    lines.insert(lines.end(), {
-            startingPoint.x, startingPoint.y, 0.0f,
-            endPoint.x, endPoint.y, 0.0f
-    });
+    if (intersectionTimout++ > MAX_INTERSECTION_TIMOUT) return;
 
     if (endPoint.x < 0) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
         endPoint = intersectionPoint;
-        if(shot){
-        if(circleIntersection() == "Name"){
+
+        if (showLines) {
+            lines.insert(lines.end(), {
+                    startingPoint.x, startingPoint.y, 0.0f,
+                    endPoint.x, endPoint.y, 0.0f
+            });
+        }
+
+        if (circleIntersection() == "Name") {
             startingPoint = endPoint;
             endPoint = newPoint;
-            calculateNewPosition(shot);
-            }
+            calculateNewPosition(showLines);
         }
-    }
-    else if (endPoint.x  > 0) {
+
+    } else if (endPoint.x > 0) {
         reflectionDir = calculateReflectionDir(bottomR, topR);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
         endPoint = intersectionPoint;
-        //std::cout << "Starting Point x: " << startingPoint.x << " Starting Point y: " << startingPoint.y<< std::endl;
-        //std::cout << "End Point x: " << endPoint.x << " End Point y: " << endPoint.y<< std::endl;
-        if(shot) {
-            if (circleIntersection() == "Name") {
-                startingPoint = endPoint;
-                endPoint = newPoint;
-                //std::cout << "New Starting Point x: " << startingPoint.x << " New Starting Point y: " << startingPoint.y<< std::endl;
-                //std::cout << "New End Point x: " << endPoint.x << " New End Point y: " << endPoint.y<< std::endl;
-                calculateNewPosition(shot);
-            }
+
+        if (showLines) {
+            lines.insert(lines.end(), {
+                    startingPoint.x, startingPoint.y, 0.0f,
+                    endPoint.x, endPoint.y, 0.0f
+            });
+        }
+
+        if (circleIntersection() == "Name") {
+            startingPoint = endPoint;
+            endPoint = newPoint;
+            calculateNewPosition(showLines);
         }
     }
 
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
 
-string Graphics::findFinalPosition(string hitNode){
+string Graphics::findFinalPosition(string hitNode) {
 
+}
+
+void Graphics::resetState() {
+    lastHit = "";
+    lines.clear();
+    intersectionTimout = 0;
+    startingPoint = DEFAULT_START_POINT;
+    lineColor = glm::vec3(255.0, 0.0, 0.0);
 }
 
 void Graphics::handleXEvents() {
@@ -202,24 +213,16 @@ void Graphics::handleXEvents() {
             pair<float, float> mousePos = screenToWorld(xev.xmotion.x, xev.xmotion.y);
             mouse_posX = min(max(mousePos.first, topL.x), topR.x);
             mouse_posY = min(max(mousePos.second, bottomL.y), topL.y);
-            endPoint = glm::vec3(mouse_posX, mouse_posY, 1.0f);
+            endPoint = glm::vec3(mouse_posX, mouse_posY, 0.0f);
 
-            lines.clear();
-            calculateNewPosition(shot);
-
-            float endY = min(intersectionPoint.y, topL.y);
-            float scale = endY / intersectionPoint.y;
-            float endX = intersectionPoint.x * scale;
-            endPoint = glm::vec3(endX, endY, 1.0f);
-
+            if (CHEAT_MODE) {
+                resetState();
+                calculateNewPosition(true);
+            }
             // std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
         }
         if (xev.type == KeyPress) {
             switch (xev.xkey.keycode) {
-                /*case 65:
-                    glUniform4f(uColor,255.0f, 0.0f, 0.0f, 1.0f);
-                    drawCircle(0, -5.5625);
-                    break; */
                 case 9://ESC
                 case 24://Q
                     exit(0);
@@ -229,12 +232,12 @@ void Graphics::handleXEvents() {
         if (xev.type == ButtonPress) {
             switch (xev.xbutton.button) {
                 case 1:// left mouse button or touch screen
-                    //mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
-                    //mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                    //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::end  l;
-                    bool shot = true;
-                    //game.shoot('I',3);
-                    calculateNewPosition(shot);
+                    lineColor = glm::vec3(0.0, 255.0, 0.0);
+                    calculateNewPosition(true);
+                    if(intersectionTimout <= MAX_INTERSECTION_TIMOUT) {
+                        std::cout << "HIT -> " << lastHit << std::endl;
+                        //game.shoot('I',3);
+                    }
                     break;
             }
         }
@@ -242,11 +245,12 @@ void Graphics::handleXEvents() {
             //game.shoot();
             switch (xev.xbutton.button) {
                 case 1:
-                    //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
-                    shot = false;
-                    startingPoint = DEFAULT_START_POINT;
-                    endPoint = glm::vec3(mouse_posX, mouse_posY, 0.0f);
-                    //circleIntersection();
+                    if (CHEAT_MODE) {
+                        lineColor = glm::vec3(255.0, 0.0, 0.0);
+                        calculateNewPosition(true);
+                    } else {
+                        resetState();
+                    }
                     break;
             }
 
@@ -270,7 +274,8 @@ void Graphics::createXWindow() {
 
     XSetWindowAttributes windowAttributes;
     windowAttributes.event_mask =
-            PointerMotionMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | Button1MotionMask | ExposureMask | PropertyChangeMask;
+            PointerMotionMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | Button1MotionMask | ExposureMask |
+            PropertyChangeMask;
 
     _xWindow = XCreateWindow(_xDisplay, root,
                              0, 0, _width, _height,
@@ -568,16 +573,6 @@ void Graphics::drawCircleByName(string name, Color color) {
 
 
 void Graphics::drawLine() {
-    /*
-    auto world = screenToWorld(_width, _height);
-    vector<GLfloat> lines = {
-            startingPoint.x, startingPoint.y, 0.0f,
-            endPoint.x, endPoint.y, 0.0f,
-            intersectionPoint.x, intersectionPoint.y, 0.0f,
-            newPoint.x, newPoint.y, 0.0f,
-    };
-    */
-
     GLuint lineBuffer;
     glGenBuffers(1, &lineBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, lineBuffer);
@@ -586,7 +581,7 @@ void Graphics::drawLine() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    glDrawArrays(GL_LINES, 0, lines.size()/3);
+    glDrawArrays(GL_LINES, 0, lines.size() / 3);
 
     glDisableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -619,10 +614,10 @@ void Graphics::draw() {
             4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0,
             -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0
     };
-    glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
+    glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0);
     drawSquare(squareData);
 
-    glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
+    glUniform4f(uColor, lineColor.x, lineColor.y, lineColor.z, 1.0);
     drawLine();
 
     for (const pair<string, Node> &node: nodes) {
