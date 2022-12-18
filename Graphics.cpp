@@ -118,26 +118,32 @@ float Graphics::calcDistanceFromCircleToEndStart(float x, float y) {
 }
 
 string Graphics::findFinalPosition(string hitNode) {
-    float m = (endPoint.y - startingPoint.y) / (endPoint.x - startingPoint.x);
-    double a = tempCircleMiddlePoint.x;
-    double b = tempCircleMiddlePoint.y;
-    float c = startingPoint.y - m * startingPoint.x;
-    float x = 0, y = 0;
+    glm::vec3 result;
+    double c_r = 0.5f;
+    double c_x = tempCircleMiddlePoint.x;
+    double c_y = tempCircleMiddlePoint.y;
 
-    double aa = 1.0 + m*m;
-    double bb = 2.0 * m*c - 2.0*a - 2.0*b*m;
-    double cc = a*a + c*c - 2.0*b*c + b*b - DEFAULT_RADIUS*DEFAULT_RADIUS;
+    glm::vec3 v = endPoint -startingPoint;
 
-    double discriminant = b*b*bb - 4.0*aa*cc;
+    double a = v.x*v.x + v.y*v.y;
+    double b = 2 * v.x * (v.x - c_x) + 2 * v.y * (v.y - c_y);
+    double c = c_x*c_x + c_y*c_y + v.x*v.x +  v.y*v.y - 2*v.x*c_x - 2*v.y*c_y - c_r*c_r;
 
-    /*if(discriminant < 0){
-        std::cout << "No intersection" << std::endl;
-    }*/
-    if(discriminant <= 0){
-        x = -b*b / (2.0*aa);
-        y = m*x + c;
-        std::cout << "One intersection found: " << " X: " << x << " Y: " << y <<std::endl;
+    double d = b*b - 4*a*c;
+
+    if (d < 0){
+        return "Name";
     }
+    else{
+        double t1 = (-b + ::sqrt(d)) / (2*a);
+        double t2 = (-b - ::sqrt(d)) / (2*a);
+
+        double t = min(t1, t2);
+       result.x = v.x * t+ v.x;
+       result.y = v.y * t + v.y;
+       result.z =  0.0f;
+    }
+    cout << "Nun noch nächsten Kreis berechnen!!" << endl;
 }
 
 string Graphics::circleIntersection() {
@@ -164,7 +170,7 @@ string Graphics::circleIntersection() {
         }
     }
     std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
-    if(_nodeName != "Name"){findFinalPosition(_nodeName);}
+
 
     return _nodeName;
 }
@@ -174,16 +180,19 @@ string Graphics::circleIntersection() {
 void Graphics::calculateNewPosition(bool shot) {
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
-
+    string _nodeName;
     if (endPoint.x < 0) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
         endPoint = intersectionPoint;
         if(shot){
-        if(circleIntersection() == "Name"){
-            startingPoint = endPoint;
-            endPoint = newPoint;
-            calculateNewPosition(shot);
+            _nodeName = circleIntersection();
+            if(circleIntersection() == "Name"){
+                startingPoint = endPoint;
+                endPoint = newPoint;
+                calculateNewPosition(shot);
+            }else{
+                findFinalPosition(_nodeName);
             }
         }
     }
@@ -194,12 +203,15 @@ void Graphics::calculateNewPosition(bool shot) {
         //std::cout << "Starting Point x: " << startingPoint.x << " Starting Point y: " << startingPoint.y<< std::endl;
         //std::cout << "End Point x: " << endPoint.x << " End Point y: " << endPoint.y<< std::endl;
         if(shot) {
+            _nodeName = circleIntersection();
             if (circleIntersection() == "Name") {
                 startingPoint = endPoint;
                 endPoint = newPoint;
                 //std::cout << "New Starting Point x: " << startingPoint.x << " New Starting Point y: " << startingPoint.y<< std::endl;
                 //std::cout << "New End Point x: " << endPoint.x << " New End Point y: " << endPoint.y<< std::endl;
                 calculateNewPosition(shot);
+            }else{
+                findFinalPosition(_nodeName);
             }
         }
     }
