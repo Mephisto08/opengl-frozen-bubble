@@ -123,9 +123,6 @@ string Graphics::circleIntersection() {
     string _nodeName = "Name";
     for (string nodeName: currentNodes) {
         if (nodeName != "QUEUE_0" && nodeName != "QUEUE_1" && nodeName != "ROOT") {
-            if (nodeName == "H3"){
-                cout << "hier"<< endl;
-            }
             pair<float, float> node = nodePositions.find(nodeName)->second;
             glm::vec3 circlePos = glm::vec3(node.first, node.second, 0.0f);
 
@@ -143,6 +140,7 @@ string Graphics::circleIntersection() {
         }
     }
     std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
+
     return _nodeName;
 }
 
@@ -161,7 +159,6 @@ void Graphics::calculateNewPosition(bool shot) {
             calculateNewPosition(shot);
             }
         }
-
     }
     else if (endPoint.x  > 0) {
         reflectionDir = calculateReflectionDir(bottomR, topR);
@@ -240,6 +237,8 @@ void Graphics::handleXEvents() {
                 case 1:
                     //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
                     shot = false;
+                    startingPoint = DEFAULT_START_POINT;
+                    endPoint = glm::vec3(mouse_posX, mouse_posY, 0.0f);
                     //circleIntersection();
                     break;
             }

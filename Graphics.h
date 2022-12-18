@@ -31,6 +31,7 @@ using namespace std;
 
 #define NUM_VERTICES 128 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
+#define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
 #define check() assert(glGetError() == 0)
 
