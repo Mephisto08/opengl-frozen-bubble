@@ -117,55 +117,46 @@ float Graphics::calcDistanceFromCircleToEndStart(float x, float y) {
     return ::sqrt(hypot2(circle, D));
 }
 
-string Graphics::findFinalPosition(string hitNode) {
-    glm::vec3 result;
-    double c_r = 0.5f;
-    double c_x = tempCircleMiddlePoint.x;
-    double c_y = tempCircleMiddlePoint.y;
-
-    glm::vec3 v = endPoint -startingPoint;
-
-    double a = v.x*v.x + v.y*v.y;
-    double b = 2 * v.x * (v.x - c_x) + 2 * v.y * (v.y - c_y);
-    double c = c_x*c_x + c_y*c_y + v.x*v.x +  v.y*v.y - 2*v.x*c_x - 2*v.y*c_y - c_r*c_r;
-
-    double d = b*b - 4*a*c;
-
-    if (d < 0){
-        return "Name";
+void Graphics::findFinalPosition(string hitNode) {
+    float smallestDistance = 100000;
+    string _nodeName = "Name";
+    auto nodeNeigh = game.getFullGraphLevel().getGraph().getNeighbors(hitNode);
+    for (const auto & nodeName : nodeNeigh){
+        auto res = intersectedNodeNames.find(nodeName);
+        if(res != intersectedNodeNames.end()){
+            if(res->second <= smallestDistance){
+                _nodeName = res->first;
+                smallestDistance = res->second;
+            }
+        }
     }
-    else{
-        double t1 = (-b + ::sqrt(d)) / (2*a);
-        double t2 = (-b - ::sqrt(d)) / (2*a);
+    newNodeToAdd =  _nodeName;
 
-        double t = min(t1, t2);
-       result.x = v.x * t+ v.x;
-       result.y = v.y * t + v.y;
-       result.z =  0.0f;
-    }
-    cout << "Nun noch nächsten Kreis berechnen!!" << endl;
 }
 
 string Graphics::circleIntersection() {
-    vector<string> currentNodes = game.getCurrentLevel().getGraph().getAllNodes();
+    intersectedNodeNames.clear();
     float smallestDistance = 100000;
     string _nodeName = "Name";
-    for (string nodeName: currentNodes) {
-        if (nodeName != "QUEUE_0" && nodeName != "QUEUE_1" && nodeName != "ROOT") {
-            pair<float, float> node = nodePositions.find(nodeName)->second;
+    for (const auto& n: nodePositions) {
+        string nodeName = n.first;
+        if (nodeName != "QUEUE_0" && nodeName != "QUEUE_1") {
+
+            pair<float, float> node = n.second;
             glm::vec3 circlePos = glm::vec3(node.first, node.second, 0.0f);
 
             float distance = calcDistanceFromCircleToEndStart(circlePos.x, circlePos.y);
 
             if (distance <= DEFAULT_RADIUS) {
                 float distanceToCircle = glm::length(circlePos - startingPoint);
-                if(distanceToCircle < smallestDistance){
-                    smallestDistance = distanceToCircle;
-                    _nodeName = nodeName;
-                    shot = false;
-                    tempCircleMiddlePoint = circlePos;
+                intersectedNodeNames.insert(make_pair(nodeName, distanceToCircle));
+                if(game.getCurrentLevel().getGraph().getNode(nodeName)){
+                    if (distanceToCircle < smallestDistance) {
+                        smallestDistance = distanceToCircle;
+                        _nodeName = nodeName;
+                        shot = false;
+                    }
                 }
-
             }
         }
     }
@@ -176,7 +167,6 @@ string Graphics::circleIntersection() {
 }
 
 
-
 void Graphics::calculateNewPosition(bool shot) {
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
@@ -185,24 +175,23 @@ void Graphics::calculateNewPosition(bool shot) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
         endPoint = intersectionPoint;
-        if(shot){
+        if (shot) {
             _nodeName = circleIntersection();
-            if(circleIntersection() == "Name"){
+            if (circleIntersection() == "Name") {
                 startingPoint = endPoint;
                 endPoint = newPoint;
                 calculateNewPosition(shot);
-            }else{
-                findFinalPosition(_nodeName);
+            } else {
+              findFinalPosition(_nodeName);
             }
         }
-    }
-    else if (endPoint.x  > 0) {
+    } else if (endPoint.x > 0) {
         reflectionDir = calculateReflectionDir(bottomR, topR);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
         endPoint = intersectionPoint;
         //std::cout << "Starting Point x: " << startingPoint.x << " Starting Point y: " << startingPoint.y<< std::endl;
         //std::cout << "End Point x: " << endPoint.x << " End Point y: " << endPoint.y<< std::endl;
-        if(shot) {
+        if (shot) {
             _nodeName = circleIntersection();
             if (circleIntersection() == "Name") {
                 startingPoint = endPoint;
@@ -210,15 +199,14 @@ void Graphics::calculateNewPosition(bool shot) {
                 //std::cout << "New Starting Point x: " << startingPoint.x << " New Starting Point y: " << startingPoint.y<< std::endl;
                 //std::cout << "New End Point x: " << endPoint.x << " New End Point y: " << endPoint.y<< std::endl;
                 calculateNewPosition(shot);
-            }else{
-                findFinalPosition(_nodeName);
+            } else {
+               findFinalPosition(_nodeName);
             }
         }
     }
 
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
-
 
 
 void Graphics::handleXEvents() {
@@ -300,7 +288,8 @@ void Graphics::createXWindow() {
 
     XSetWindowAttributes windowAttributes;
     windowAttributes.event_mask =
-            PointerMotionMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | Button1MotionMask | ExposureMask | PropertyChangeMask;
+            PointerMotionMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | Button1MotionMask | ExposureMask |
+            PropertyChangeMask;
 
     _xWindow = XCreateWindow(_xDisplay, root,
                              0, 0, _width, _height,

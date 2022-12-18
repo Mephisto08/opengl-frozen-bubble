@@ -71,8 +71,14 @@ private:
     // node screen positions
     map<string, pair<float, float>> nodePositions;
 
+    // intersected nodes
+    map<string, float> intersectedNodeNames;
+
+    string newNodeToAdd;
+
     // Game instance
     Game game;
+
 
     //Mouse coordinates
     float mouse_posX = 0;
