@@ -79,7 +79,7 @@ private:
 
     glm::vec3 intersectionPoint = glm::vec3(0);
     glm::vec3 newPoint = glm::vec3(0);
-    glm::vec3 startingPoint = glm::vec3(0.0f,-5.5625f,1.0f);
+    glm::vec3 startingPoint = glm::vec3(4.0199f,2.5625f,1.0f);
     glm::vec3 endPoint = glm::vec3(0.0f, 10.0f, 1.0f);
 
     glm::vec3 bottomL = glm::vec3(-4.01999998f,-4.7750001, 1.0f);
@@ -95,6 +95,8 @@ private:
 
     float offsetY = 1;
 
+    bool shot = false;
+
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);
     void resize();
@@ -109,13 +111,14 @@ private:
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
-    void calculateNewPosition();
+    void calculateNewPosition(bool shot);
     glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
     glm::vec3 calculateReflectionDir(glm::vec3 bottom, glm::vec3 top);
-    float circleIntersection();
+    string circleIntersection();
     glm::vec3 proj(glm::vec3 a, glm::vec3 b);
     float hypot2(glm::vec3 a, glm::vec3 b);
     float calcDistanceFromCircleToEndStart(float x, float y);
+    string findFinalPosition(string hitNode);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:

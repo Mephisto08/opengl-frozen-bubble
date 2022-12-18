@@ -116,8 +116,10 @@ float Graphics::calcDistanceFromCircleToEndStart(float x, float y) {
     return ::sqrt(hypot2(circle, D));
 }
 
-float Graphics::circleIntersection() {
+string Graphics::circleIntersection() {
     vector<string> currentNodes = game.getCurrentLevel().getGraph().getAllNodes();
+    float smallestDistance = 100000;
+    string _nodeName = "Name";
     for (string nodeName: currentNodes) {
         if (nodeName != "QUEUE_0" && nodeName != "QUEUE_1" && nodeName != "ROOT") {
             pair<float, float> node = nodePositions.find(nodeName)->second;
@@ -126,27 +128,56 @@ float Graphics::circleIntersection() {
 
             if (distance <= DEFAULT_RADIUS) {
                 float distanceToCircle = glm::length(circlePos - startingPoint);
-                std::cout << "Intersection -> " << nodeName << " (Distance: " << distanceToCircle << ")" << std::endl;
+                if(distanceToCircle < smallestDistance){
+                    smallestDistance = distanceToCircle;
+                    _nodeName = nodeName;
+                    shot = false;
+                }
+
             }
         }
     }
+    std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
+    return _nodeName;
 }
 
-void Graphics::calculateNewPosition() {
+void Graphics::calculateNewPosition(bool shot) {
     glm::vec3 reflectionDir = glm::vec3(1);
     glm::vec3 borderDir = glm::vec3(1);
 
-    if (mouse_posX < 0) {
+    if (endPoint.x < 0) {
         reflectionDir = calculateReflectionDir(bottomL, topL);
         newPoint = intersectionPoint + reflectionDir * 20.0f;
+        if(shot){
+        if(circleIntersection() == "Name"){
+            startingPoint = endPoint;
+            endPoint = newPoint;
+            calculateNewPosition(shot);
+            }
+        }
 
     }
-    if (mouse_posX > 0) {
+    if (endPoint.x  > 0) {
         reflectionDir = calculateReflectionDir(bottomR, topR);
         newPoint = intersectionPoint + reflectionDir * 20.0f;
+        //std::cout << "Starting Point x: " << startingPoint.x << " Starting Point y: " << startingPoint.y<< std::endl;
+        //std::cout << "End Point x: " << endPoint.x << " End Point y: " << endPoint.y<< std::endl;
+        if(shot) {
+            if (circleIntersection() == "Name") {
+                startingPoint = endPoint;
+                endPoint = newPoint;
+                //std::cout << "New Starting Point x: " << startingPoint.x << " New Starting Point y: " << startingPoint.y<< std::endl;
+                //std::cout << "New End Point x: " << endPoint.x << " New End Point y: " << endPoint.y<< std::endl;
+                calculateNewPosition(shot);
+            }
+        }
     }
 
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
+}
+
+string Graphics::findFinalPosition(string hitNode){
+
 }
 
 void Graphics::handleXEvents() {
@@ -163,8 +194,7 @@ void Graphics::handleXEvents() {
             mouse_posX = min(max(mousePos.first, topL.x), topR.x);
             mouse_posY = min(max(mousePos.second, bottomL.y), topL.y);
             endPoint = glm::vec3(mouse_posX, mouse_posY, 1.0f);
-
-            calculateNewPosition();
+            calculateNewPosition(shot);
 
             float endY = min(intersectionPoint.y, topL.y);
             float scale = endY / intersectionPoint.y;
@@ -190,8 +220,10 @@ void Graphics::handleXEvents() {
                 case 1:// left mouse button or touch screen
                     //mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
                     //mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                    //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
+                    //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::end  l;
+                    bool shot = true;
                     //game.shoot('I',3);
+                    calculateNewPosition(shot);
                     break;
             }
         }
@@ -200,7 +232,8 @@ void Graphics::handleXEvents() {
             switch (xev.xbutton.button) {
                 case 1:
                     //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
-                    circleIntersection();
+                    shot = false;
+                    //circleIntersection();
                     break;
             }
 
@@ -525,7 +558,7 @@ void Graphics::drawLine() {
     auto world = screenToWorld(_width, _height);
 
     GLfloat arrowData[] = {
-            0.0f, -5.5625f, 0.0f,
+            startingPoint.x, startingPoint.y, 0.0f,
             endPoint.x, endPoint.y, 0.0f,
             intersectionPoint.x, intersectionPoint.y, 0.0f,
             newPoint.x, newPoint.y, 0.0f,
