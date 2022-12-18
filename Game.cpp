@@ -9,7 +9,9 @@ Game::Game() {
 void Game::start() {
     cout << "Starting new game..." << endl;
     for (const Level &level: levels) {
-        playLevel(level);
+        if (level.getName()[0] != '.'){
+            playLevel(level);
+        }
     }
 }
 
@@ -135,6 +137,10 @@ void Game::shoot(char row, int column) {
 
 Level &Game::getCurrentLevel() {
     return currentLevel;
+}
+
+Level &Game::getFullGraphLevel() {
+    return levels[0];
 }
 
 

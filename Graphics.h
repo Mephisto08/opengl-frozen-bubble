@@ -74,8 +74,14 @@ private:
     // node screen positions
     map<string, pair<float, float>> nodePositions;
 
+    // intersected nodes
+    map<string, float> intersectedNodeNames;
+
+    string newNodeToAdd;
+
     // Game instance
     Game game;
+
 
     //Mouse coordinates
     float mouse_posX = 0;
@@ -103,6 +109,8 @@ private:
     int intersectionTimout = 0;
     vector<GLfloat> lines = {};
     glm::vec3 lineColor = glm::vec3(255.0, 0.0, 0.0);
+    
+    glm::vec3 circleIntersectionPoint = glm::vec3(1);
 
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);

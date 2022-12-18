@@ -13,7 +13,7 @@
 using namespace std;
 
 static const string LEVEL_PATH =  "../level";
-static string LEVEL_ORDER[] = {"3"};
+static string LEVEL_ORDER[] = {".full","3" };
 
 class Game {
 private:
@@ -31,6 +31,7 @@ public:
     static Color stringToColor(const string& color);
 
     Level &getCurrentLevel();
+    Level &getFullGraphLevel();
 };
 
 #endif //HMI_GAME_H
