@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <map>
+#include <chrono>
 #include "Node.h"
 #include "Color.h"
 #include "Game.h"
@@ -31,7 +32,10 @@ using namespace std;
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
-#define MAX_INTERSECTION_TIMOUT 50
+#define ANIMATION_SPEED 3.5
+#define ANIMATION_THRESHOLD 0.5
+
+#define MAX_INTERSECTION_TIMOUT 15
 #define NUM_VERTICES 128 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
@@ -81,6 +85,13 @@ private:
     // Game instance
     Game game;
 
+    // For animations
+    glm::vec3 currentAnimationDir;
+    glm::vec3 currentAnimationPos;
+    bool animationInProgress = false;
+    vector<glm::vec3> animationPoints;
+    std::chrono::time_point<std::chrono::system_clock> t_start = std::chrono::system_clock::now();
+
     //Mouse coordinates
     float mouse_posX = 0;
     float mouse_posY = 0;
@@ -122,7 +133,7 @@ private:
     void setupViewport();
     void drawSquare(GLfloat squareData[]);
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
-    void drawCircleByName(string name, Color color);
+    void drawCircleByName(string name, Color color, glm::vec2 offsetPos);
     void drawLine();
     void calculateNewPosition(bool showLines = false);
     glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
@@ -134,6 +145,9 @@ private:
     void findFinalPosition(string hitNode);
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
     void resetState();
+    void startAnimation();
+    void stopAnimation();
+    void drawAnimatedShootCircle(Color color, double t_frame);
 
 public:
     Graphics();
