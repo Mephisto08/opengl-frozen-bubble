@@ -156,7 +156,7 @@ private:
     glm::vec3 proj(glm::vec3 a, glm::vec3 b);
     float hypot2(glm::vec3 a, glm::vec3 b);
     float calcDistanceFromCircleToEndStart(float x, float y);
-    string findFinalPosition(string hitNode);
+
     void loadTexture(string filePath, GLuint& texture);
     void initCircleTextures();
     void circleTexture();

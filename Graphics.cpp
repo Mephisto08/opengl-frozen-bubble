@@ -884,6 +884,8 @@ void Graphics::stopAnimation() {
     if (game.getCurrentLevel().isWon()) {
         cout << "WINNER WINNER CHICKEN DINNER!" << endl;
         game.nextLevel();
+        circleTextures.clear();
+        initCircleTextures();
     }
     if (game.getCurrentLevel().isGameOver()) {
         cout << "GAME OVER!" << endl;
