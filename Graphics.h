@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <map>
+#include <chrono>
 #include "Node.h"
 #include "Color.h"
 #include "Game.h"
@@ -28,10 +29,19 @@ extern "C" {
 }
 using namespace std;
 
+#define CHEAT_MODE true
+
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
+
 #define NUM_VERTICES 180 // define the number of vertices in the circle
+
+#define ANIMATION_SPEED 3.5
+#define ANIMATION_THRESHOLD 0.5
+
+#define MAX_INTERSECTION_TIMOUT 15
+
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
@@ -82,8 +92,19 @@ private:
     // node screen positions
     map<string, pair<float, float>> nodePositions;
 
+    // intersected nodes
+    map<string, float> intersectedNodeNames;
+    string nodeToAdd;
+
     // Game instance
     Game game;
+
+    // For animations
+    glm::vec3 currentAnimationDir;
+    glm::vec3 currentAnimationPos;
+    bool animationInProgress = false;
+    vector<glm::vec3> animationPoints;
+    std::chrono::time_point<std::chrono::system_clock> t_start = std::chrono::system_clock::now();
 
     //Mouse coordinates
     float mouse_posX = 0;
@@ -107,10 +128,12 @@ private:
 
     float offsetY = 1;
 
+    string lastHit = "";
+    int intersectionTimout = 0;
+    vector<GLfloat> lines = {};
+    glm::vec3 lineColor = glm::vec3(255.0, 0.0, 0.0);
 
-    bool shot = false;
     glm::vec3 circleIntersectionPoint = glm::vec3(1);
-    glm::vec3 tempCircleMiddlePoint = glm::vec3(1);
 
     void showCompilerLog(GLint shader);
     void showLinkerLog(GLint prog);
@@ -124,9 +147,9 @@ private:
     void setupViewport();
     void drawSquare(GLfloat squareData[]);
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
-    void drawCircleByName(string name, Color color);
+    void drawCircleByName(string name, Color color, glm::vec2 offsetPos);
     void drawLine();
-    void calculateNewPosition(bool shot);
+    void calculateNewPosition(bool showLines = false);
     glm::vec3 get_line_intersection(glm::vec3 bottomBorder, glm::vec3 topBorder);
     glm::vec3 calculateReflectionDir(glm::vec3 bottom, glm::vec3 top);
     string circleIntersection();
@@ -137,7 +160,14 @@ private:
     void loadTexture(string filePath, GLuint& texture);
     void initCircleTextures();
     void circleTexture();
+
+    void findFinalPosition(string hitNode);
+
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
+    void resetState();
+    void startAnimation();
+    void stopAnimation();
+    void drawAnimatedShootCircle(Color color, double t_frame);
 
 public:
     Graphics();

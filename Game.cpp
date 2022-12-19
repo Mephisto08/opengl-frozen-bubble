@@ -6,11 +6,11 @@ Game::Game() {
     srand(time(nullptr));
 }
 
-void Game::start() {
-    cout << "Starting new game..." << endl;
-    for (const Level &level: levels) {
-        playLevel(level);
-    }
+void Game::nextLevel() {
+    cout << "Starting new Level..." << endl;
+    lvlCounter = (lvlCounter + 1) % levels.size();
+    if(lvlCounter == 0) lvlCounter++;
+    playLevel(levels[lvlCounter]);
 }
 
 void Game::playLevel(Level l) {
@@ -63,6 +63,7 @@ void Game::importLevels() {
             throw invalid_argument("Cannot import level: Level '" + levelName + "' wasn't found!");
         }
         levels.push_back(level);
+        cout << "LEVEL: " << levelName<< " importiert." << endl;
     }
 }
 
@@ -114,27 +115,26 @@ void Game::shoot(char row, int column) {
     Color queue_1 = currentLevel.getGraph().getNode("QUEUE_1")->getColor();
     currentLevel.getGraph().setNodeColor("QUEUE_0", queue_1);
 
-    // Erstellen neuer Farbe für neuen Node in Queue
-    Color newQueueColor = createNewNodeColor();
-    currentLevel.getGraph().setNodeColor("QUEUE_1", newQueueColor);
 
     currentLevel.insertNode(row, column, newNodeColor);
     currentLevel.checkLine(nodeName);
     currentLevel.removeDroppedNodes();
 
+    // Erstellen neuer Farbe für neuen Node in Queue
+    Color newQueueColor = createNewNodeColor();
+    currentLevel.getGraph().setNodeColor("QUEUE_1", newQueueColor);
+
     //cout << "\nAFTER:" << endl;
     //currentLevel.print();
 
-    if (currentLevel.isWon()) {
-        cout << "WINNER WINNER CHICKEN DINNER!" << endl;
-    }
-    if (currentLevel.isGameOver()) {
-        cout << "GAME OVER!" << endl;
-    }
 }
 
 Level &Game::getCurrentLevel() {
     return currentLevel;
+}
+
+Level &Game::getFullGraphLevel() {
+    return levels[0];
 }
 
 
