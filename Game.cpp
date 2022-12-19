@@ -114,13 +114,14 @@ void Game::shoot(char row, int column) {
     Color queue_1 = currentLevel.getGraph().getNode("QUEUE_1")->getColor();
     currentLevel.getGraph().setNodeColor("QUEUE_0", queue_1);
 
-    // Erstellen neuer Farbe für neuen Node in Queue
-    Color newQueueColor = createNewNodeColor();
-    currentLevel.getGraph().setNodeColor("QUEUE_1", newQueueColor);
 
     currentLevel.insertNode(row, column, newNodeColor);
     currentLevel.checkLine(nodeName);
     currentLevel.removeDroppedNodes();
+
+    // Erstellen neuer Farbe für neuen Node in Queue
+    Color newQueueColor = createNewNodeColor();
+    currentLevel.getGraph().setNodeColor("QUEUE_1", newQueueColor);
 
     //cout << "\nAFTER:" << endl;
     //currentLevel.print();
