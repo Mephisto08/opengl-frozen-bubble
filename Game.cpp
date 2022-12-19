@@ -63,6 +63,7 @@ void Game::importLevels() {
             throw invalid_argument("Cannot import level: Level '" + levelName + "' wasn't found!");
         }
         levels.push_back(level);
+        cout << "LEVEL: " << levelName<< " importiert." << endl;
     }
 }
 
