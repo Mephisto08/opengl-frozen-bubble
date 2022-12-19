@@ -121,10 +121,10 @@ void Graphics::findFinalPosition(string hitNode) {
     float smallestDistance = 100000;
     string _nodeName = "Name";
     auto nodeNeigh = game.getFullGraphLevel().getGraph().getNeighbors(hitNode);
-    for (const auto & nodeName : nodeNeigh){
+    for (const auto &nodeName: nodeNeigh) {
         auto res = intersectedNodeNames.find(nodeName);
-        if(res != intersectedNodeNames.end()){
-            if(res->second <= smallestDistance){
+        if (res != intersectedNodeNames.end()) {
+            if (res->second <= smallestDistance) {
                 _nodeName = res->first;
                 smallestDistance = res->second;
             }
@@ -138,7 +138,7 @@ string Graphics::circleIntersection() {
     string nodeA = "";
     float smallestDistance = 100000;
     string _nodeName = "Name";
-    for (const auto& n: nodePositions) {
+    for (const auto &n: nodePositions) {
         string nodeName = n.first;
         if (nodeName != "QUEUE_0" && nodeName != "QUEUE_1") {
 
@@ -151,10 +151,10 @@ string Graphics::circleIntersection() {
             if (distance <= DEFAULT_RADIUS * 1.75) {
                 float distanceToCircle = glm::length(circlePos - startingPoint);
                 intersectedNodeNames.insert(make_pair(nodeName, distanceToCircle));
-                if(nodeName[0] == 'A' && !game.getCurrentLevel().getGraph().getNode(nodeName)){
+                if (nodeName[0] == 'A' && !game.getCurrentLevel().getGraph().getNode(nodeName)) {
                     nodeA = nodeName;
                 }
-                if(game.getCurrentLevel().getGraph().getNode(nodeName)){
+                if (game.getCurrentLevel().getGraph().getNode(nodeName)) {
                     if (distanceToCircle < smallestDistance) {
                         smallestDistance = distanceToCircle;
                         _nodeName = nodeName;
@@ -164,8 +164,8 @@ string Graphics::circleIntersection() {
         }
     }
     // std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
-    if (_nodeName == "Name"){
-        if (!nodeA.empty()){
+    if (_nodeName == "Name") {
+        if (!nodeA.empty()) {
             nodeToAdd = nodeA;
         }
     }
@@ -191,12 +191,14 @@ void Graphics::calculateNewPosition(bool showLines) {
         }
 
         if (circleIntersection() == "Name") {
+            if (endPoint.y <= topL.y) { // Ignore animation points that are out of bounce
+                animationPoints.push_back(endPoint);
+            }
             startingPoint = endPoint;
             endPoint = newPoint;
             calculateNewPosition(showLines);
         } else {
-            if (nodeToAdd.empty())findFinalPosition(lastHit);
-
+            if (nodeToAdd.empty()) findFinalPosition(lastHit);
         }
 
     } else if (endPoint.x > 0) {
@@ -212,11 +214,14 @@ void Graphics::calculateNewPosition(bool showLines) {
         }
 
         if (circleIntersection() == "Name") {
+            if (endPoint.y <= topL.y) {  // Ignore animation points that are out of bounce
+                animationPoints.push_back(endPoint);
+            }
             startingPoint = endPoint;
             endPoint = newPoint;
             calculateNewPosition(showLines);
         } else {
-            if (nodeToAdd.empty())findFinalPosition(lastHit);
+            if (nodeToAdd.empty()) findFinalPosition(lastHit);
         }
     }
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
@@ -224,15 +229,17 @@ void Graphics::calculateNewPosition(bool showLines) {
 
 void Graphics::resetState() {
     lastHit = "";
-    nodeToAdd= "";
+    nodeToAdd = "";
     lines.clear();
     intersectionTimout = 0;
+    animationPoints.clear();
     startingPoint = DEFAULT_START_POINT;
     lineColor = glm::vec3(255.0, 0.0, 0.0);
     endPoint = glm::vec3(mouse_posX, mouse_posY, 0.0f);
 }
 
 void Graphics::handleXEvents() {
+    if (animationInProgress) return;
     bool quit = false;
 
     // under Raspberry Pi 4 we can process keys from X11
@@ -266,18 +273,10 @@ void Graphics::handleXEvents() {
                 case 1:// left mouse button or touch screen
                     lineColor = glm::vec3(0.0, 255.0, 0.0);
                     calculateNewPosition(true);
-                    if(intersectionTimout <= MAX_INTERSECTION_TIMOUT || !nodeToAdd.empty()) {
+                    if (intersectionTimout <= MAX_INTERSECTION_TIMOUT || !nodeToAdd.empty()) {
                         //std::cout << "HIT -> " << lastHit << std::endl;
                         //std::cout << "new Node -> " << nodeToAdd[0] <<  (int)nodeToAdd[1]-48 << std::endl;
-                        game.shoot(nodeToAdd[0],(int)nodeToAdd[1]-48);
-                        if (game.getCurrentLevel().isWon()){
-                            cout << "WINNER WINNER CHICKEN DINNER!" << endl;
-                            game.nextLevel();
-                        }
-                        if (game.getCurrentLevel().isGameOver()){
-                            cout << "GAME OVER!" << endl;
-                            exit(0);
-                        }
+                        startAnimation();
                     }
                     break;
             }
@@ -598,17 +597,41 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     check();
 }
 
-void Graphics::drawCircleByName(string name, Color color) {
+void Graphics::drawCircleByName(string name, Color color, glm::vec2 offsetPos = glm::vec2(0)) {
     auto res = nodePositions.find(name);
     if (res == nodePositions.end()) {
         throw invalid_argument("Cannot draw circle: Name '" + name + "' wasn't found!");
         return;
     }
-    const float x = res->second.first;
-    const float y = res->second.second;
+    const float x = res->second.first + offsetPos.x;
+    const float y = res->second.second + offsetPos.y;
 
     glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
     drawCircle(x, y);
+}
+
+void Graphics::drawAnimatedShootCircle(Color color, double t_frame) {
+    if (animationPoints.empty() || currentAnimationPos.y > topL.y) { // Break animation if out of bounce or no more points left
+        stopAnimation();
+        return;
+    }
+
+    currentAnimationPos.x = currentAnimationPos.x + currentAnimationDir.x * t_frame * ANIMATION_SPEED;
+    currentAnimationPos.y = currentAnimationPos.y + currentAnimationDir.y * t_frame * ANIMATION_SPEED;
+
+    auto endPos = animationPoints.front();
+    if (currentAnimationPos.x > (endPos.x - ANIMATION_THRESHOLD) &&
+        currentAnimationPos.x<(endPos.x + ANIMATION_THRESHOLD) && currentAnimationPos.y>(
+                endPos.y - ANIMATION_THRESHOLD) && currentAnimationPos.y < (endPos.y + ANIMATION_THRESHOLD)) {
+
+        animationPoints.erase(animationPoints.begin()); // Remove first point, since reached
+        if (!animationPoints.empty()) {
+            currentAnimationDir = animationPoints.front() - currentAnimationPos; // Update animation direction
+        }
+    }
+
+    glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
+    drawCircle(currentAnimationPos.x, currentAnimationPos.y);
 }
 
 
@@ -630,6 +653,14 @@ void Graphics::drawLine() {
 
 void Graphics::draw() {
     map<string, Node> nodes = game.getCurrentLevel().getGraph().getNodes();
+
+    double t_frame = 0;
+    if (animationInProgress) {
+        std::chrono::time_point<std::chrono::system_clock> t_current = std::chrono::system_clock::now();
+        std::chrono::duration<double> t_elapsed = t_current - t_start;
+        t_frame = t_elapsed.count();
+        t_start = t_current;
+    }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     check();
@@ -662,6 +693,14 @@ void Graphics::draw() {
 
     for (const pair<string, Node> &node: nodes) {
         if (node.first != "ROOT") {
+            if (node.first == "QUEUE_0") {
+                if (animationInProgress) {
+                    drawAnimatedShootCircle(node.second.getColor(), t_frame);
+                } else {
+                    drawCircleByName(node.first, node.second.getColor());
+                }
+                continue;
+            }
             drawCircleByName(node.first, node.second.getColor());
         }
     }
@@ -680,4 +719,37 @@ void Graphics::draw() {
     // swap buffers: show what we just painted
     eglSwapBuffers(display, surface);
     check();
+}
+
+void Graphics::startAnimation() {
+    animationInProgress = true;
+    cout << "Animation started!" << endl;
+
+    // Add final pos to end of animation points
+    auto endPos = nodePositions.find(nodeToAdd)->second;
+    animationPoints.emplace_back(endPos.first, endPos.second, 0.0f);
+
+    // Prepare starting point of animation
+    auto startPos = nodePositions.find("QUEUE_0")->second;
+    currentAnimationPos = glm::vec3(startPos.first, startPos.second, 0.0f);
+
+    // Prepare animation initial direction
+    currentAnimationDir = animationPoints.front() - currentAnimationPos;
+
+    t_start = std::chrono::system_clock::now();
+}
+
+void Graphics::stopAnimation() {
+    animationInProgress = false;
+    cout << "Animation finished!" << endl;
+
+    game.shoot(nodeToAdd[0], (int) nodeToAdd[1] - 48);
+    if (game.getCurrentLevel().isWon()) {
+        cout << "WINNER WINNER CHICKEN DINNER!" << endl;
+        game.nextLevel();
+    }
+    if (game.getCurrentLevel().isGameOver()) {
+        cout << "GAME OVER!" << endl;
+        exit(0);
+    }
 }
