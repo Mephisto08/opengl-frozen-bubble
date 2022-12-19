@@ -12,5 +12,5 @@ void main(void) {
     //vec4 texel1 = texture2D(tex2, TexCoord);
 
     //color = texel0 * texel1;
-    color = texture2D(tex2, TexCoord);
+    color = texture2D(tex, TexCoord);
 }

@@ -30,7 +30,7 @@ using namespace std;
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
-#define NUM_VERTICES 256 // define the number of vertices in the circle
+#define NUM_VERTICES 360 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
@@ -67,7 +67,8 @@ private:
     GLuint aTexCoord;
     GLuint texUniform;
     GLuint texUniform2;
-    GLuint texture;
+    GLuint texturePlayfield;
+    GLuint textureScene;
     GLuint textureCircle;
 
     // raspi4 globals
@@ -117,7 +118,7 @@ private:
     void initShaders();
     void initNodePositions();
     void setupViewport();
-    void drawSquare(GLfloat squareData[],GLfloat texData[]);
+    void drawSquare(GLfloat squareData[]);
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
@@ -129,7 +130,7 @@ private:
     float hypot2(glm::vec3 a, glm::vec3 b);
     float calcDistanceFromCircleToEndStart(float x, float y);
     string findFinalPosition(string hitNode);
-    void backgroundTexture();
+    void loadTexture(string filePath, GLuint& texture);
     void circleTexture();
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
