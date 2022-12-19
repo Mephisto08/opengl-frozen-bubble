@@ -723,7 +723,6 @@ void Graphics::draw() {
 
 void Graphics::startAnimation() {
     animationInProgress = true;
-    cout << "Animation started!" << endl;
 
     // Add final pos to end of animation points
     auto endPos = nodePositions.find(nodeToAdd)->second;
@@ -741,7 +740,6 @@ void Graphics::startAnimation() {
 
 void Graphics::stopAnimation() {
     animationInProgress = false;
-    cout << "Animation finished!" << endl;
 
     game.shoot(nodeToAdd[0], (int) nodeToAdd[1] - 48);
     if (game.getCurrentLevel().isWon()) {
