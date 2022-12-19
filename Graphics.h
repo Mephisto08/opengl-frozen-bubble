@@ -76,6 +76,7 @@ private:
 
     // intersected nodes
     map<string, float> intersectedNodeNames;
+    string nodeToAdd;
 
     // Game instance
     Game game;

@@ -65,7 +65,7 @@ void Level::setColors(const map<string, Color> &colors) {
 
 bool Level::isWon() const {
     // Only root left --> Game is won
-    return graph.getAllNodes().size() == 1;
+    return graph.getAllNodes().size() == 3;
 }
 
 bool Level::isGameOver() const {

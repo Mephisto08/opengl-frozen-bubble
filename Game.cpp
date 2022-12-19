@@ -6,13 +6,11 @@ Game::Game() {
     srand(time(nullptr));
 }
 
-void Game::start() {
-    cout << "Starting new game..." << endl;
-    for (const Level &level: levels) {
-        if (level.getName()[0] != '.'){
-            playLevel(level);
-        }
-    }
+void Game::nextLevel() {
+    cout << "Starting new Level..." << endl;
+    lvlCounter = (lvlCounter + 1) % levels.size();
+    if(lvlCounter == 0) lvlCounter++;
+    playLevel(levels[lvlCounter]);
 }
 
 void Game::playLevel(Level l) {
@@ -127,12 +125,6 @@ void Game::shoot(char row, int column) {
     //cout << "\nAFTER:" << endl;
     //currentLevel.print();
 
-    if (currentLevel.isWon()) {
-        cout << "WINNER WINNER CHICKEN DINNER!" << endl;
-    }
-    if (currentLevel.isGameOver()) {
-        cout << "GAME OVER!" << endl;
-    }
 }
 
 Level &Game::getCurrentLevel() {

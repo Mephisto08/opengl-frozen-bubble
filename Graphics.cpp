@@ -1,7 +1,7 @@
 #include "Graphics.h"
 
 Graphics::Graphics() {
-    game.start();
+    game.nextLevel();
 
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
@@ -130,10 +130,12 @@ void Graphics::findFinalPosition(string hitNode) {
             }
         }
     }
+    nodeToAdd = _nodeName;
 }
 
 string Graphics::circleIntersection() {
     intersectedNodeNames.clear();
+    string nodeA = "";
     float smallestDistance = 100000;
     string _nodeName = "Name";
     for (const auto& n: nodePositions) {
@@ -145,9 +147,13 @@ string Graphics::circleIntersection() {
 
             float distance = calcDistanceFromCircleToEndStart(circlePos.x, circlePos.y);
 
-            if (distance <= DEFAULT_RADIUS) {
+            // 1.75 das kein laserstrahl sondern Kugel angenähert wird
+            if (distance <= DEFAULT_RADIUS * 1.75) {
                 float distanceToCircle = glm::length(circlePos - startingPoint);
                 intersectedNodeNames.insert(make_pair(nodeName, distanceToCircle));
+                if(nodeName[0] == 'A' && !game.getCurrentLevel().getGraph().getNode(nodeName)){
+                    nodeA = nodeName;
+                }
                 if(game.getCurrentLevel().getGraph().getNode(nodeName)){
                     if (distanceToCircle < smallestDistance) {
                         smallestDistance = distanceToCircle;
@@ -158,6 +164,11 @@ string Graphics::circleIntersection() {
         }
     }
     // std::cout << "Intersection -> " << _nodeName << " (Distance: " << smallestDistance << ")" << std::endl;
+    if (_nodeName == "Name"){
+        if (!nodeA.empty()){
+            nodeToAdd = nodeA;
+        }
+    }
     lastHit = _nodeName;
     return _nodeName;
 }
@@ -184,7 +195,8 @@ void Graphics::calculateNewPosition(bool showLines) {
             endPoint = newPoint;
             calculateNewPosition(showLines);
         } else {
-            findFinalPosition(lastHit);
+            if (nodeToAdd.empty())findFinalPosition(lastHit);
+
         }
 
     } else if (endPoint.x > 0) {
@@ -204,7 +216,7 @@ void Graphics::calculateNewPosition(bool showLines) {
             endPoint = newPoint;
             calculateNewPosition(showLines);
         } else {
-            findFinalPosition(lastHit);
+            if (nodeToAdd.empty())findFinalPosition(lastHit);
         }
     }
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
@@ -212,10 +224,12 @@ void Graphics::calculateNewPosition(bool showLines) {
 
 void Graphics::resetState() {
     lastHit = "";
+    nodeToAdd= "";
     lines.clear();
     intersectionTimout = 0;
     startingPoint = DEFAULT_START_POINT;
     lineColor = glm::vec3(255.0, 0.0, 0.0);
+    endPoint = glm::vec3(mouse_posX, mouse_posY, 0.0f);
 }
 
 void Graphics::handleXEvents() {
@@ -252,9 +266,18 @@ void Graphics::handleXEvents() {
                 case 1:// left mouse button or touch screen
                     lineColor = glm::vec3(0.0, 255.0, 0.0);
                     calculateNewPosition(true);
-                    if(intersectionTimout <= MAX_INTERSECTION_TIMOUT) {
-                        std::cout << "HIT -> " << lastHit << std::endl;
-                        //game.shoot('I',3);
+                    if(intersectionTimout <= MAX_INTERSECTION_TIMOUT || !nodeToAdd.empty()) {
+                        //std::cout << "HIT -> " << lastHit << std::endl;
+                        //std::cout << "new Node -> " << nodeToAdd[0] <<  (int)nodeToAdd[1]-48 << std::endl;
+                        game.shoot(nodeToAdd[0],(int)nodeToAdd[1]-48);
+                        if (game.getCurrentLevel().isWon()){
+                            cout << "WINNER WINNER CHICKEN DINNER!" << endl;
+                            game.nextLevel();
+                        }
+                        if (game.getCurrentLevel().isGameOver()){
+                            cout << "GAME OVER!" << endl;
+                            exit(0);
+                        }
                     }
                     break;
             }
@@ -263,11 +286,10 @@ void Graphics::handleXEvents() {
             //game.shoot();
             switch (xev.xbutton.button) {
                 case 1:
+                    resetState();
                     if (CHEAT_MODE) {
                         lineColor = glm::vec3(255.0, 0.0, 0.0);
                         calculateNewPosition(true);
-                    } else {
-                        resetState();
                     }
                     break;
             }
