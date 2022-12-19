@@ -553,16 +553,34 @@ void Graphics::setupViewport() {
     model = glm::mat4(1.0f);
 
     glViewport(0, 0, screenWidth, screenHeight);
-    GLenum  error = glGetError();
     check();
 }
 
 void Graphics::drawSquare(GLfloat squareData[],GLfloat texData[]) {
-    glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, squareData);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+// Upload the vertex data to the VBO
+    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(squareData), squareData, GL_STATIC_DRAW);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+// Enable the vertex attribute arrays
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);  // Vertex positions
+    glEnableVertexAttribArray(0);  // Vertex positions
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);  // Vertex positions
+
+    /*glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, squareData);
     glEnableVertexAttribArray(aPosition);
 
     glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texData);
-    glEnableVertexAttribArray(aTexCoord);
+    glEnableVertexAttribArray(aTexCoord);*/
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     GLenum  error = glGetError();
     check();
@@ -640,8 +658,8 @@ void Graphics::backgroundTexture() {
     unsigned char *data = stbi_load("/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/back_one_player.png",
                                     &width, &height, &nrChannels, 0);
 
-    auto GL_RGB8 = 0x8051;
-    auto GL_RGBA8 = 0x8058;
+    //auto GL_RGB8 = 0x8051;
+    //auto GL_RGBA8 = 0x8058;
 
    /* if (data == nullptr) {
         throw std::logic_error("Texture file coudn't be read.");
@@ -666,8 +684,8 @@ void Graphics::backgroundTexture() {
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);//GL_REPEAT
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -701,9 +719,9 @@ void Graphics::draw() {
     // a square as a simple triangle fan
     // (it shows as a rectangle without a projection matrix ;) )
     GLfloat squareData[] = {
-            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,// 1.0f, 1.0f,
-            4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,// 1.0f, 0.0f,
-            4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0,// 0.0f, 0.0f,
+            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 0.0,// 1.0f, 1.0f,
+            4 * spacingX, -6.6f * spacingY + offsetY, 1.0, 0.0,// 1.0f, 0.0f,
+            4 * spacingX, 6.6f * spacingY + offsetY, 1.0, 1.0,// 0.0f, 0.0f,
             -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0 //0.0f, 1.0f
     };
     GLfloat texData[] = {
@@ -711,28 +729,28 @@ void Graphics::draw() {
             1.0f, 0.0f,
             0.0f, 0.0f,
             0.0f, 1.0f*/
-            0.0f, 1.0f,
             0.0f, 0.0f,
             1.0f, 0.0f,
-            1.0f, 1.0f
+            1.0f, 1.0f,
+            0.0f, 1.0f
     };
 
     //glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
-    glBindTexture(GL_TEXTURE_2D,texture);
+
 
     glUniform1i(texUniform,0);
     glActiveTexture(GL_TEXTURE);
-
+    glBindTexture(GL_TEXTURE_2D,texture);
     drawSquare(squareData,texData);
 
-    glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
+    /*glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
     drawLine();
 
     for (const pair<string, Node> &node: nodes) {
         if (node.first != "ROOT") {
             drawCircleByName(node.first, node.second.getColor());
         }
-    }
+    }*/
 
     glUniform4f(uColor, 255.0f, 0.0f, 0.0f, 1.0f);
     //drawCircle(-5.96f,1.875f, 0.5f);

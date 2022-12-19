@@ -1,14 +1,15 @@
-#version 100
+#version 300 es
 precision mediump float;
-attribute vec4 Position;
-attribute vec2 aTexCoord;
+layout (location = 0) in vec2 Position;
+layout (location = 1) in vec2 aTexCoord;
+//attribute vec2 aTexCoord;
 uniform mat4 Projection;
 uniform mat4 View;
 uniform mat4 Model;
-varying vec2 TexCoord;
+out vec2 TexCoord;
 
 void main(void) {
     //gl_Position = Position;
-    gl_Position = Projection * View * Model * Position;
+    gl_Position = Projection * View * Model * vec4(Position,0.0,1.0);
     TexCoord = aTexCoord;
 }
