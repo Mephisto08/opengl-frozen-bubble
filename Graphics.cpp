@@ -9,25 +9,32 @@ Graphics::Graphics() {
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 
-    //glEnable(GL_TEXTURE_2D);
-
     cout << "Initializing shaders..." << endl;
     initShaders();
 
     cout << "Setting up textures..." << endl;
     string playfield = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/playfield.png";
     string scene = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/scene.png";
-    string redcircle = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/red.png";
     loadTexture(scene, textureScene);
     loadTexture(playfield, texturePlayfield);
-    loadTexture(redcircle, textureCircle);
-    //circleTexture();
+    initCircleTextures();
 
     cout << "Initializing node screen positions..." << endl;
     initNodePositions();
 
     cout << "Setting up viewport..." << endl;
     setupViewport();
+
+}
+
+void Graphics::initCircleTextures(){
+
+    for(auto color: game.getCurrentLevel().getCurrentColors()){
+        GLuint texture;
+        string path = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/"+ color.first+".png";
+        loadTexture(path,texture);
+        circleTextures.insert(make_pair(color.first,texture));
+    }
 
 }
 
@@ -50,7 +57,6 @@ void Graphics::resize() {
     _width = gwa.width;
     _height = gwa.height;
     glViewport(0, 0, _width, _height);
-    //std::cout << "Actual width & height: " << _width << " " << _height << std::endl;
     // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
     projection = glm::perspective(glm::radians(FOV_Y), (float) _width / (float) _height, 0.1f, 100.0f);
 }
@@ -145,9 +151,6 @@ string Graphics::findFinalPosition(string hitNode) {
 
     double discriminant = b*b*bb - 4.0*aa*cc;
 
-    /*if(discriminant < 0){
-        std::cout << "No intersection" << std::endl;
-    }*/
     if(discriminant <= 0){
         x = -b*b / (2.0*aa);
         y = m*x + c;
@@ -206,20 +209,14 @@ void Graphics::calculateNewPosition(bool shot) {
         reflectionDir = calculateReflectionDir(bottomR, topR);
         newPoint = intersectionPoint + reflectionDir * 15.0f;
         endPoint = intersectionPoint;
-        //std::cout << "Starting Point x: " << startingPoint.x << " Starting Point y: " << startingPoint.y<< std::endl;
-        //std::cout << "End Point x: " << endPoint.x << " End Point y: " << endPoint.y<< std::endl;
         if(shot) {
             if (circleIntersection() == "Name") {
                 startingPoint = endPoint;
                 endPoint = newPoint;
-                //std::cout << "New Starting Point x: " << startingPoint.x << " New Starting Point y: " << startingPoint.y<< std::endl;
-                //std::cout << "New End Point x: " << endPoint.x << " New End Point y: " << endPoint.y<< std::endl;
                 calculateNewPosition(shot);
             }
         }
     }
-
-    //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
 
 
@@ -233,7 +230,6 @@ void Graphics::handleXEvents() {
         XNextEvent(_xDisplay, &xev);
 
         if (xev.type == MotionNotify) {
-            // std::cout << "X: " << xev.xmotion.x  << " Y: " << xev.xmotion.y  << std::endl;
             pair<float, float> mousePos = screenToWorld(xev.xmotion.x, xev.xmotion.y);
             mouse_posX = min(max(mousePos.first, topL.x), topR.x);
             mouse_posY = min(max(mousePos.second, bottomL.y), topL.y);
@@ -244,15 +240,9 @@ void Graphics::handleXEvents() {
             float scale = endY / intersectionPoint.y;
             float endX = intersectionPoint.x * scale;
             endPoint = glm::vec3(endX, endY, 1.0f);
-
-            // std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::endl;
         }
         if (xev.type == KeyPress) {
             switch (xev.xkey.keycode) {
-                /*case 65:
-                    glUniform4f(uColor,255.0f, 0.0f, 0.0f, 1.0f);
-                    drawCircle(0, -5.5625);
-                    break; */
                 case 9://ESC
                 case 24://Q
                     exit(0);
@@ -262,11 +252,7 @@ void Graphics::handleXEvents() {
         if (xev.type == ButtonPress) {
             switch (xev.xbutton.button) {
                 case 1:// left mouse button or touch screen
-                    //mouse_posX = (xev.xbutton.x - 960) / 960.0f * 12.87f;
-                    //mouse_posY = -(xev.xbutton.y - 540) / 960.0f * 12.87f;
-                    //std::cout << "X: " << mouse_posX << " Y: " << mouse_posY << std::end  l;
                     bool shot = true;
-                    //game.shoot('I',3);
                     calculateNewPosition(shot);
                     break;
             }
@@ -592,7 +578,7 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     GLfloat vertices[NUM_VERTICES][4];  // Array to store vertices and texture coordinates
 
     int i  = 0;
-    for ( float angle=0.0; angle<361.0; angle+=2.0){
+    for ( float angle=0.0; angle<360.0; angle+=2.0){
         float radian = angle * (M_PI/180.0f);
 
        float xcos = (float)cos(radian);
@@ -618,19 +604,14 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
 
 // Enable the vertex attribute arrays
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);  // Vertex positions
-   //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, (void*)0);  // Vertex positions
     glEnableVertexAttribArray(0);  // Vertex positions
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));  // Texture coordinates
-    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);  // Texture coordinates
     glEnableVertexAttribArray(1);  // Texture coordinates
 
-    // draw the circle using the vertices array
-    //glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    //glEnableVertexAttribArray(aPosition);
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     GLenum  error = glGetError();
-    //glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     check();
 }
 
@@ -643,7 +624,11 @@ void Graphics::drawCircleByName(string name, Color color) {
     const float x = res->second.first;
     const float y = res->second.second;
 
-    glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
+    auto circliename = circleTextures.find(color.colorName);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,circliename->second);
+    glUniform1i(texUniform,1);
+    //glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
     drawCircle(x, y);
 }
 
@@ -661,11 +646,6 @@ void Graphics::drawLine() {
     if (intersectionPoint.y > topL.y) {
         arrowData[6] = arrowData[7] = arrowData[9] = arrowData[10] = 20.0f;
     }
-
-    //0.0f, 5.0f, 0.0f,
-    //12.87f, 0.0f, 0.0f,
-    //12.87f, 0.0f, 0.0f,
-    //0.0f, -5.0f, 0.0f
 
     GLuint lineBuffer;
     glGenBuffers(1, &lineBuffer);
@@ -731,53 +711,6 @@ void Graphics::loadTexture(string filePath, GLuint& texture) {
     }
 }
 
-void Graphics::circleTexture() {
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/red.png",
-                                    &width, &height, &nrChannels, 0);
-    if (data == nullptr) {
-        throw std::logic_error("Texture file coudn't be read.");
-    } else {
-        GLint internalformat;
-        GLenum format;
-        switch (nrChannels) {
-            case 1:
-                internalformat = GL_R8;
-                format = GL_RED;
-                break;
-            case 2:
-                internalformat = GL_RG8;
-                format = GL_RG;
-                break;
-            case 3:
-                internalformat = GL_RGB8;
-                format = GL_RGB;
-                break;
-            case 4:
-                internalformat = GL_RGBA8;
-                format = GL_RGBA;
-                break;
-            default:
-                internalformat = GL_RGB8;
-                format = GL_RGB;
-                break;
-        }
-        glGenTextures(1, &textureCircle);
-        glBindTexture(GL_TEXTURE_2D, textureCircle);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);//GL_REPEAT
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        stbi_image_free(data);
-    }
-}
-
 void Graphics::draw() {
     map<string, Node> nodes = game.getCurrentLevel().getGraph().getNodes();
 
@@ -821,28 +754,19 @@ void Graphics::draw() {
 
 
 
-    
+
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D,texturePlayfield);
     glUniform1i(texUniform,1);
     drawSquare(squareData);
 
 
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D,textureCircle);
-    glUniform1i(texUniform,1);
-    drawCircle(0.0f,0.0f, 0.5f);
-    //glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
     drawLine();
-    /*for (const pair<string, Node> &node: nodes) {
+    for (const pair<string, Node> &node: nodes) {
         if (node.first != "ROOT") {
             drawCircleByName(node.first, node.second.getColor());
         }
-    }*/
-
-    //glUniform4f(uColor, 255.0f, 0.0f, 0.0f, 1.0f);
-
-    //drawCircle(0.0f,-5.5625f, 0.5f);
+    }
 
     check();
 

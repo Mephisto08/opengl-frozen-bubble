@@ -15,6 +15,7 @@
 #include "Color.h"
 #include "Game.h"
 #include "stb_image.h"
+#include <cctype>
 
 extern "C" {
 //#include <bcm_host.h>
@@ -30,7 +31,7 @@ using namespace std;
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
-#define NUM_VERTICES 360 // define the number of vertices in the circle
+#define NUM_VERTICES 180 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
@@ -69,7 +70,10 @@ private:
     GLuint texUniform2;
     GLuint texturePlayfield;
     GLuint textureScene;
-    GLuint textureCircle;
+    GLuint textureCircleRed;
+    GLuint textureCircle2;
+
+    map<string,GLuint> circleTextures;
 
     // raspi4 globals
     Display *_xDisplay;
@@ -131,6 +135,7 @@ private:
     float calcDistanceFromCircleToEndStart(float x, float y);
     string findFinalPosition(string hitNode);
     void loadTexture(string filePath, GLuint& texture);
+    void initCircleTextures();
     void circleTexture();
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
