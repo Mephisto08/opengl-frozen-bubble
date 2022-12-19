@@ -699,7 +699,10 @@ void Graphics::drawAnimatedShootCircle(Color color, double t_frame) {
         }
     }
 
-    glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
+    auto circliename = circleTextures.find(game.getCurrentLevel().getGraph().getNode("QUEUE_0")->getColor().colorName);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,circliename->second);
+    glUniform1i(texUniform,1);
     drawCircle(currentAnimationPos.x, currentAnimationPos.y);
 }
 
