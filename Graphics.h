@@ -30,7 +30,7 @@ using namespace std;
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
-#define NUM_VERTICES 128 // define the number of vertices in the circle
+#define NUM_VERTICES 256 // define the number of vertices in the circle
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
@@ -66,7 +66,9 @@ private:
     GLuint uColor;
     GLuint aTexCoord;
     GLuint texUniform;
+    GLuint texUniform2;
     GLuint texture;
+    GLuint textureCircle;
 
     // raspi4 globals
     Display *_xDisplay;
@@ -128,6 +130,7 @@ private:
     float calcDistanceFromCircleToEndStart(float x, float y);
     string findFinalPosition(string hitNode);
     void backgroundTexture();
+    void circleTexture();
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:

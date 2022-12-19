@@ -15,7 +15,8 @@ Graphics::Graphics() {
     initShaders();
 
     cout << "Setting up textures..." << endl;
-    backgroundTexture();
+    //backgroundTexture();
+    circleTexture();
 
     cout << "Initializing node screen positions..." << endl;
     initNodePositions();
@@ -496,6 +497,7 @@ void Graphics::initShaders() {
     uColor = glGetUniformLocation(program, "Color");
     aTexCoord = glGetUniformLocation(program, "aTexCoord");
     texUniform = glGetUniformLocation(program,"tex");
+    texUniform2 = glGetUniformLocation(program,"tex2");
 }
 
 void Graphics::initNodePositions() {
@@ -588,7 +590,7 @@ void Graphics::drawSquare(GLfloat squareData[],GLfloat texData[]) {
 
 void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
     // array to hold the vertices of the circle
-    GLfloat vertices[NUM_VERTICES][2];
+    /*GLfloat vertices[NUM_VERTICES][2];
 
     // calculate the vertices of the circle
     for (int i = 0; i < NUM_VERTICES; i++) {
@@ -597,10 +599,55 @@ void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
         vertices[i][1] = radius * sin(angle) + centerY;
     }
 
+    GLfloat texCoords[NUM_VERTICES][2];
+    for (int i = 0; i < NUM_VERTICES; i++) {
+        texCoords[i][0] = (GLfloat)i / NUM_VERTICES;
+        texCoords[i][1] = 0.5;
+    }*/
+
+    GLfloat vertices[NUM_VERTICES][4];  // Array to store vertices and texture coordinates
+
+// Calculate the vertices of the circle
+   /* for (int i = 0; i < NUM_VERTICES; i++) {
+        GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
+        vertices[i][0] = radius * cos(angle) + centerX;
+        vertices[i][1] = radius * sin(angle) + centerY;
+        vertices[i][2] = (GLfloat)i / NUM_VERTICES;  // Calculate the x-coordinate of the texture
+        vertices[i][3] = 1.0;  // The y-coordinate of the texture is always 1.0
+    }*/
+    float s = 0.5f;
+    float t = 0.5f;
+    for (int i = 0; i < NUM_VERTICES; i++) {
+        GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
+        vertices[i][0] = radius * cos(angle) + centerX;
+        vertices[i][1] = radius * sin(angle) + centerY;
+        vertices[i][2] = s; // texture coordinate s
+        vertices[i][3] = t; // texture coordinate t
+    }
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+// Upload the vertex data to the VBO
+    glBufferData(GL_ARRAY_BUFFER, 4*NUM_VERTICES*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+// Enable the vertex attribute arrays
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);  // Vertex positions
+    glEnableVertexAttribArray(0);  // Vertex positions
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2 * sizeof(float)));  // Texture coordinates
+    glEnableVertexAttribArray(1);  // Texture coordinates
+
     // draw the circle using the vertices array
-    glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    glEnableVertexAttribArray(aPosition);
+    //glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    //glEnableVertexAttribArray(aPosition);
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
+    GLenum  error = glGetError();
     //glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
     check();
 }
@@ -658,29 +705,6 @@ void Graphics::backgroundTexture() {
     unsigned char *data = stbi_load("/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/back_one_player.png",
                                     &width, &height, &nrChannels, 0);
 
-    //auto GL_RGB8 = 0x8051;
-    //auto GL_RGBA8 = 0x8058;
-
-   /* if (data == nullptr) {
-        throw std::logic_error("Texture file coudn't be read.");
-    } else {
-        GLint internalformat;
-        GLenum format;
-        switch (nrChannels) {
-            case 1:
-                internalformat = GL_RGB8;
-                format = GL_RGB;
-                break;
-            case 2:
-                internalformat = GL_RGBA8;
-                format = GL_RGBA;
-                break;
-            default:
-                internalformat = GL_RGB8;
-                format = GL_RGB;
-                break;
-        }*/
-
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -694,7 +718,26 @@ void Graphics::backgroundTexture() {
         glBindTexture(GL_TEXTURE_2D, 0);
 
         stbi_image_free(data);
-    //}
+}
+
+void Graphics::circleTexture() {
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/red.png",
+                                    &width, &height, &nrChannels, 0);
+
+    glGenTextures(1, &textureCircle);
+    glBindTexture(GL_TEXTURE_2D, textureCircle);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);//GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    stbi_image_free(data);
 }
 
 void Graphics::draw() {
@@ -719,10 +762,10 @@ void Graphics::draw() {
     // a square as a simple triangle fan
     // (it shows as a rectangle without a projection matrix ;) )
     GLfloat squareData[] = {
-            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 0.0,// 1.0f, 1.0f,
-            4 * spacingX, -6.6f * spacingY + offsetY, 1.0, 0.0,// 1.0f, 0.0f,
-            4 * spacingX, 6.6f * spacingY + offsetY, 1.0, 1.0,// 0.0f, 0.0f,
-            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0 //0.0f, 1.0f
+            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0, //0.0, 0.0,// 1.0f, 1.0f,
+            4 * spacingX, -6.6f * spacingY + offsetY, 1.0, 1.0,//1.0, 0.0,// 1.0f, 0.0f,
+            4 * spacingX, 6.6f * spacingY + offsetY, 1.0, 0.0,//1.0, 1.0,// 0.0f, 0.0f,
+            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 0.0//0.0, 1.0 //0.0f, 1.0f
     };
     GLfloat texData[] = {
             /*1.0f, 1.0f,
@@ -738,22 +781,25 @@ void Graphics::draw() {
     //glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
 
 
-    glUniform1i(texUniform,0);
+    //glUniform1i(texUniform,0);
+    //glActiveTexture(GL_TEXTURE);
+    //glBindTexture(GL_TEXTURE_2D,texture);
+    //drawSquare(squareData,texData);
+
+    glUniform1i(texUniform2,0);
     glActiveTexture(GL_TEXTURE);
-    glBindTexture(GL_TEXTURE_2D,texture);
-    drawSquare(squareData,texData);
-
-    /*glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
+    glBindTexture(GL_TEXTURE_2D,textureCircle);
+    drawCircle(-5.96f,1.875f, 0.5f);
+    //glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
     drawLine();
-
-    for (const pair<string, Node> &node: nodes) {
+    /*for (const pair<string, Node> &node: nodes) {
         if (node.first != "ROOT") {
             drawCircleByName(node.first, node.second.getColor());
         }
     }*/
 
-    glUniform4f(uColor, 255.0f, 0.0f, 0.0f, 1.0f);
-    //drawCircle(-5.96f,1.875f, 0.5f);
+    //glUniform4f(uColor, 255.0f, 0.0f, 0.0f, 1.0f);
+
     //drawCircle(0.0f,-5.5625f, 0.5f);
 
     check();
