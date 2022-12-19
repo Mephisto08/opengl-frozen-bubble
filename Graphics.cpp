@@ -3,17 +3,39 @@
 Graphics::Graphics() {
     game.nextLevel();
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 
     cout << "Initializing shaders..." << endl;
     initShaders();
 
+    cout << "Setting up textures..." << endl;
+    string playfield = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/playfield.png";
+    string scene = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/scene.png";
+    loadTexture(scene, textureScene);
+    loadTexture(playfield, texturePlayfield);
+    initCircleTextures();
+
     cout << "Initializing node screen positions..." << endl;
     initNodePositions();
 
     cout << "Setting up viewport..." << endl;
     setupViewport();
+
+}
+
+void Graphics::initCircleTextures(){
+
+    for(auto color: game.getCurrentLevel().getCurrentColors()){
+        GLuint texture;
+        string path = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/"+ color.first+".png";
+        loadTexture(path,texture);
+        circleTextures.insert(make_pair(color.first,texture));
+    }
+
 }
 
 void Graphics::showCompilerLog(GLint shader) {
@@ -35,7 +57,6 @@ void Graphics::resize() {
     _width = gwa.width;
     _height = gwa.height;
     glViewport(0, 0, _width, _height);
-    //std::cout << "Actual width & height: " << _width << " " << _height << std::endl;
     // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
     projection = glm::perspective(glm::radians(FOV_Y), (float) _width / (float) _height, 0.1f, 100.0f);
 }
@@ -226,6 +247,7 @@ void Graphics::calculateNewPosition(bool showLines) {
     }
     //std::cout << "New Intersect-> X: " << intersectionPoint.x << " Y: " << intersectionPoint.y << std::endl;
 }
+
 
 void Graphics::resetState() {
     lastHit = "";
@@ -511,6 +533,9 @@ void Graphics::initShaders() {
     aView = glGetUniformLocation(program, "View");
     aModel = glGetUniformLocation(program, "Model");
     uColor = glGetUniformLocation(program, "Color");
+    aTexCoord = glGetUniformLocation(program, "aTexCoord");
+    texUniform = glGetUniformLocation(program,"tex");
+    texUniform2 = glGetUniformLocation(program,"tex2");
 }
 
 void Graphics::initNodePositions() {
@@ -572,28 +597,68 @@ void Graphics::setupViewport() {
 }
 
 void Graphics::drawSquare(GLfloat squareData[]) {
-    glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, squareData);
-    glEnableVertexAttribArray(aPosition);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+// Upload the vertex data to the VBO
+    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(squareData), squareData, GL_STATIC_DRAW);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+// Enable the vertex attribute arrays
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);  // Vertex positions
+    glEnableVertexAttribArray(0);  // Vertex positions
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);  // Vertex positions
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    GLenum  error = glGetError();
     check();
 }
 
 void Graphics::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat radius) {
-    // array to hold the vertices of the circle
-    GLfloat vertices[NUM_VERTICES][2];
+    GLfloat vertices[NUM_VERTICES][4];  // Array to store vertices and texture coordinates
 
-    // calculate the vertices of the circle
-    for (int i = 0; i < NUM_VERTICES; i++) {
-        GLfloat angle = 2 * M_PI * i / NUM_VERTICES;
-        vertices[i][0] = radius * cos(angle) + centerX;
-        vertices[i][1] = radius * sin(angle) + centerY;
+    int i  = 0;
+    for ( float angle=0.0; angle<360.0; angle+=2.0){
+        float radian = angle * (M_PI/180.0f);
+
+       float xcos = (float)cos(radian);
+       float ysin = (float)sin(radian);
+        vertices[i][0] = xcos * DEFAULT_RADIUS  + centerX;
+        vertices[i][1] = ysin * DEFAULT_RADIUS* (_width/_height) + centerY;
+        vertices[i][2] = xcos * 0.5 + 0.5;
+        vertices[i][3] = ysin * 0.5 + 0.5;
+        ++i;
     }
 
-    // draw the circle using the vertices array
-    glVertexAttribPointer(aPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    glEnableVertexAttribArray(aPosition);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+// Upload the vertex data to the VBO
+    glBufferData(GL_ARRAY_BUFFER, 4*NUM_VERTICES*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+// Enable the vertex attribute arrays
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);  // Vertex positions
+    glEnableVertexAttribArray(0);  // Vertex positions
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));  // Texture coordinates
+    glEnableVertexAttribArray(1);  // Texture coordinates
+
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
-    //glDrawArrays(GL_TRIANGLE_FAN, 0, NUM_VERTICES);
+    GLenum  error = glGetError();
     check();
 }
 
@@ -606,7 +671,11 @@ void Graphics::drawCircleByName(string name, Color color, glm::vec2 offsetPos = 
     const float x = res->second.first + offsetPos.x;
     const float y = res->second.second + offsetPos.y;
 
-    glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
+    auto circliename = circleTextures.find(color.colorName);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,circliename->second);
+    glUniform1i(texUniform,1);
+    //glUniform4f(uColor, float(color.r) / 255.0f, float(color.g) / 255.0f, float(color.b) / 255.0f, color.a);
     drawCircle(x, y);
 }
 
@@ -651,6 +720,55 @@ void Graphics::drawLine() {
     glDeleteBuffers(1, &lineBuffer);
 }
 
+void Graphics::loadTexture(string filePath, GLuint& texture) {
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(filePath.c_str(),
+                                    &width, &height, &nrChannels, 0);
+
+    if (data == nullptr) {
+        throw std::logic_error("Texture file coudn't be read.");
+    } else {
+        GLint internalformat;
+        GLenum format;
+        switch (nrChannels) {
+            case 1:
+                internalformat = GL_R8;
+                format = GL_RED;
+                break;
+            case 2:
+                internalformat = GL_RG8;
+                format = GL_RG;
+                break;
+            case 3:
+                internalformat = GL_RGB8;
+                format = GL_RGB;
+                break;
+            case 4:
+                internalformat = GL_RGBA8;
+                format = GL_RGBA;
+                break;
+            default:
+                internalformat = GL_RGB8;
+                format = GL_RGB;
+                break;
+        }
+
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);//GL_REPEAT
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        stbi_image_free(data);
+    }
+}
+
 void Graphics::draw() {
     map<string, Node> nodes = game.getCurrentLevel().getGraph().getNodes();
 
@@ -663,6 +781,7 @@ void Graphics::draw() {
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     check();
 
     // could also be set just once
@@ -677,20 +796,44 @@ void Graphics::draw() {
     glUniformMatrix4fv(aModel, 1, GL_FALSE, &model[0][0]);
     check();
 
+
+    GLfloat backgroundData[] = {
+            screenToWorld(0, 0).first, screenToWorld(0, 0).second, 0.0, 0.0,
+            screenToWorld(_width, 0).first, screenToWorld(_width, 0).second, 1.0, 0.0,
+            screenToWorld(_width, _height).first, screenToWorld(_width, _height).second, 1.0, 1.0,
+            screenToWorld(0, _height).first, screenToWorld(0, _height).second, 0.0, 1.0,
+    };
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,textureScene);
+    glUniform1i(texUniform,0);
+    drawSquare(backgroundData);
+
     // a square as a simple triangle fan
     // (it shows as a rectangle without a projection matrix ;) )
     GLfloat squareData[] = {
-            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,
-            4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,
-            4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0,
-            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0
+            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0, //0.0, 0.0,// 1.0f, 1.0f,
+            4 * spacingX, -6.6f * spacingY + offsetY, 1.0, 1.0,//1.0, 0.0,// 1.0f, 0.0f,
+            4 * spacingX, 6.6f * spacingY + offsetY, 1.0, 0.0,//1.0, 1.0,// 0.0f, 0.0f,
+            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 0.0//0.0, 1.0 //0.0f, 1.0f
     };
+
+
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,texturePlayfield);
+    glUniform1i(texUniform,1);
+    drawSquare(squareData);
+
+
     glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0);
     drawSquare(squareData);
 
     glUniform4f(uColor, lineColor.x, lineColor.y, lineColor.z, 1.0);
     drawLine();
 
+
+    drawLine();
     for (const pair<string, Node> &node: nodes) {
         if (node.first != "ROOT") {
             if (node.first == "QUEUE_0") {
@@ -704,10 +847,6 @@ void Graphics::draw() {
             drawCircleByName(node.first, node.second.getColor());
         }
     }
-
-    glUniform4f(uColor, 255.0f, 0.0f, 0.0f, 1.0f);
-    //drawCircle(-5.96f,1.875f, 0.5f);
-    //drawCircle(0.0f,-5.5625f, 0.5f);
 
     check();
 

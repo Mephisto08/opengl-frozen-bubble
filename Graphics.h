@@ -15,10 +15,12 @@
 #include "Node.h"
 #include "Color.h"
 #include "Game.h"
+#include "stb_image.h"
+#include <cctype>
 
 extern "C" {
 //#include <bcm_host.h>
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -32,11 +34,14 @@ using namespace std;
 #define FOV_Y 45.0f
 #define LOOKAT_Z 17.5
 
+
+#define NUM_VERTICES 180 // define the number of vertices in the circle
+
 #define ANIMATION_SPEED 3.5
 #define ANIMATION_THRESHOLD 0.5
 
 #define MAX_INTERSECTION_TIMOUT 15
-#define NUM_VERTICES 128 // define the number of vertices in the circle
+
 #define DEFAULT_RADIUS 0.5
 #define DEFAULT_START_POINT glm::vec3(0.0f,-5.5625f,0.0f)
 
@@ -70,6 +75,15 @@ private:
     GLuint aView;
     GLuint aModel;
     GLuint uColor;
+    GLuint aTexCoord;
+    GLuint texUniform;
+    GLuint texUniform2;
+    GLuint texturePlayfield;
+    GLuint textureScene;
+    GLuint textureCircleRed;
+    GLuint textureCircle2;
+
+    map<string,GLuint> circleTextures;
 
     // raspi4 globals
     Display *_xDisplay;
@@ -118,7 +132,7 @@ private:
     int intersectionTimout = 0;
     vector<GLfloat> lines = {};
     glm::vec3 lineColor = glm::vec3(255.0, 0.0, 0.0);
-    
+
     glm::vec3 circleIntersectionPoint = glm::vec3(1);
 
     void showCompilerLog(GLint shader);
@@ -142,7 +156,13 @@ private:
     glm::vec3 proj(glm::vec3 a, glm::vec3 b);
     float hypot2(glm::vec3 a, glm::vec3 b);
     float calcDistanceFromCircleToEndStart(float x, float y);
+    string findFinalPosition(string hitNode);
+    void loadTexture(string filePath, GLuint& texture);
+    void initCircleTextures();
+    void circleTexture();
+
     void findFinalPosition(string hitNode);
+
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
     void resetState();
     void startAnimation();
