@@ -14,6 +14,7 @@
 #include "Node.h"
 #include "Color.h"
 #include "Game.h"
+#include "stb_image.h"
 
 extern "C" {
 //#include <bcm_host.h>
@@ -63,6 +64,9 @@ private:
     GLuint aView;
     GLuint aModel;
     GLuint uColor;
+    GLuint aTexCoord;
+    GLuint texUniform;
+    GLuint texture;
 
     // raspi4 globals
     Display *_xDisplay;
@@ -96,6 +100,7 @@ private:
 
     float offsetY = 1;
 
+
     bool shot = false;
     glm::vec3 circleIntersectionPoint = glm::vec3(1);
     glm::vec3 tempCircleMiddlePoint = glm::vec3(1);
@@ -110,7 +115,7 @@ private:
     void initShaders();
     void initNodePositions();
     void setupViewport();
-    void drawSquare(GLfloat squareData[]);
+    void drawSquare(GLfloat squareData[],GLfloat texData[]);
     void drawCircle(GLfloat centerX = 0.0, GLfloat centerY = 0.0, GLfloat radius = DEFAULT_RADIUS);
     void drawCircleByName(string name, Color color);
     void drawLine();
@@ -122,6 +127,7 @@ private:
     float hypot2(glm::vec3 a, glm::vec3 b);
     float calcDistanceFromCircleToEndStart(float x, float y);
     string findFinalPosition(string hitNode);
+    void backgroundTexture();
     pair<float, float> screenToWorld(int screenPosX, int screenPosY);
 
 public:

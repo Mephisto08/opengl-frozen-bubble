@@ -17,7 +17,9 @@ add_executable(
         main.cpp
         Graphics.h Graphics.cpp)
 
-target_link_libraries(HMI EGL GLESv2 X11 png)
+include_directories(/usr/include/stb)
+target_link_libraries(HMI EGL GLESv2 X11 png stb)
+
 
 add_custom_target(copy_shader COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/shader ${CMAKE_CURRENT_BINARY_DIR}/shader)
 add_dependencies(HMI copy_shader)

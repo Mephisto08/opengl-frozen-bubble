@@ -3,17 +3,26 @@
 Graphics::Graphics() {
     game.start();
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     cout << "Initializing OpenGL ES..." << endl;
     initOGL();
 
+    //glEnable(GL_TEXTURE_2D);
+
     cout << "Initializing shaders..." << endl;
     initShaders();
+
+    cout << "Setting up textures..." << endl;
+    backgroundTexture();
 
     cout << "Initializing node screen positions..." << endl;
     initNodePositions();
 
     cout << "Setting up viewport..." << endl;
     setupViewport();
+
 }
 
 void Graphics::showCompilerLog(GLint shader) {
@@ -485,6 +494,8 @@ void Graphics::initShaders() {
     aView = glGetUniformLocation(program, "View");
     aModel = glGetUniformLocation(program, "Model");
     uColor = glGetUniformLocation(program, "Color");
+    aTexCoord = glGetUniformLocation(program, "aTexCoord");
+    texUniform = glGetUniformLocation(program,"tex");
 }
 
 void Graphics::initNodePositions() {
@@ -542,13 +553,18 @@ void Graphics::setupViewport() {
     model = glm::mat4(1.0f);
 
     glViewport(0, 0, screenWidth, screenHeight);
+    GLenum  error = glGetError();
     check();
 }
 
-void Graphics::drawSquare(GLfloat squareData[]) {
+void Graphics::drawSquare(GLfloat squareData[],GLfloat texData[]) {
     glVertexAttribPointer(aPosition, 4, GL_FLOAT, GL_FALSE, 0, squareData);
     glEnableVertexAttribArray(aPosition);
+
+    glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texData);
+    glEnableVertexAttribArray(aTexCoord);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    GLenum  error = glGetError();
     check();
 }
 
@@ -619,10 +635,55 @@ void Graphics::drawLine() {
     glDeleteBuffers(1, &lineBuffer);
 }
 
+void Graphics::backgroundTexture() {
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/back_one_player.png",
+                                    &width, &height, &nrChannels, 0);
+
+    auto GL_RGB8 = 0x8051;
+    auto GL_RGBA8 = 0x8058;
+
+   /* if (data == nullptr) {
+        throw std::logic_error("Texture file coudn't be read.");
+    } else {
+        GLint internalformat;
+        GLenum format;
+        switch (nrChannels) {
+            case 1:
+                internalformat = GL_RGB8;
+                format = GL_RGB;
+                break;
+            case 2:
+                internalformat = GL_RGBA8;
+                format = GL_RGBA;
+                break;
+            default:
+                internalformat = GL_RGB8;
+                format = GL_RGB;
+                break;
+        }*/
+
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        stbi_image_free(data);
+    //}
+}
+
 void Graphics::draw() {
     map<string, Node> nodes = game.getCurrentLevel().getGraph().getNodes();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     check();
 
     // could also be set just once
@@ -640,13 +701,29 @@ void Graphics::draw() {
     // a square as a simple triangle fan
     // (it shows as a rectangle without a projection matrix ;) )
     GLfloat squareData[] = {
-            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,
-            4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,
-            4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0,
-            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0
+            -4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,// 1.0f, 1.0f,
+            4 * spacingX, -6.6f * spacingY + offsetY, 0.0, 1.0,// 1.0f, 0.0f,
+            4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0,// 0.0f, 0.0f,
+            -4 * spacingX, 6.6f * spacingY + offsetY, 0.0, 1.0 //0.0f, 1.0f
     };
-    glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
-    drawSquare(squareData);
+    GLfloat texData[] = {
+            /*1.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 0.0f,
+            0.0f, 1.0f*/
+            0.0f, 1.0f,
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f
+    };
+
+    //glUniform4f(uColor, 0.3176, 0.6118, 0.8588, 1.0); // some blue
+    glBindTexture(GL_TEXTURE_2D,texture);
+
+    glUniform1i(texUniform,0);
+    glActiveTexture(GL_TEXTURE);
+
+    drawSquare(squareData,texData);
 
     glUniform4f(uColor, 255.0, 0.0, 0.0, 1.0); // some blue
     drawLine();
