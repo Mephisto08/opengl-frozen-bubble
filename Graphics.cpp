@@ -13,8 +13,8 @@ Graphics::Graphics() {
     initShaders();
 
     cout << "Setting up textures..." << endl;
-    string playfield = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/playfield.png";
-    string scene = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/scene.png";
+    string playfield = "../textures/playfield.png";
+    string scene = "../textures/scene.png";
     loadTexture(scene, textureScene);
     loadTexture(playfield, texturePlayfield);
     initCircleTextures();
@@ -31,7 +31,7 @@ void Graphics::initCircleTextures(){
 
     for(auto color: game.getCurrentLevel().getCurrentColors()){
         GLuint texture;
-        string path = "/home/osboxes/opengl-frozen-bubble/cmake-build-debug/textures/"+ color.first+".png";
+        string path = "../textures/"+ color.first+".png";
         loadTexture(path,texture);
         circleTextures.insert(make_pair(color.first,texture));
     }
